@@ -755,6 +755,12 @@ function startGPS(){
       userCircle.setLatLng(ll);
       userCircle.setRadius(pos.coords.accuracy||30);
     }
+    // Salva para usar no Places bias e cálculo de distância
+    if(window.google&&google.maps){
+      userLatLng=new google.maps.LatLng(pos.coords.latitude,pos.coords.longitude);
+    } else {
+      userLatLng={lat:()=>pos.coords.latitude,lng:()=>pos.coords.longitude};
+    }
   },err=>console.warn(err.message),{enableHighAccuracy:true,maximumAge:5000,timeout:10000});
 }
 
@@ -890,13 +896,18 @@ function addDestino(){
 //  DEST / ROUTE
 // ══════════════════════════════════════════════
 const GKEY='AIzaSyA3pvM7opCbIRvJBRuVYDNGpNLOb8gv4Og';
-let acService=null, sessionToken=null;
+const GEOKEY='6d913107894a4225848c23500e0f9b56';
+let acService=null, placesService=null, sessionToken=null;
+let userLatLng=null; // atualizado pelo GPS
 
-// Inicializa Google Places após carregar a lib
 function initPlaces(){
   if(window.google&&google.maps&&google.maps.places){
     acService=new google.maps.places.AutocompleteService();
+    const d=document.createElement('div');
+    document.body.appendChild(d);
+    placesService=new google.maps.places.PlacesService(d);
     sessionToken=new google.maps.places.AutocompleteSessionToken();
+    console.log('Google Places OK');
   }
 }
 
@@ -910,114 +921,140 @@ function onDestIn(v){
     loading.style.display='none';
     return;
   }
+  // Mostra destinos internos do hospital que batem
   buildDestList(v);
   document.getElementById('dest-label').textContent='Resultados';
   loading.style.display='block';
-  searchTimer=setTimeout(()=>searchPlaces(v.trim()), 300);
+  searchTimer=setTimeout(()=>doSearch(v.trim()), 350);
 }
 
-function searchPlaces(q){
-  const loading=document.getElementById('ac-loading');
-  const el=document.getElementById('dest-list');
-
-  // Tenta Google Places primeiro (melhor qualidade, igual Uber)
-  if(acService){
-    const req={
-      input: q,
-      sessionToken,
-      language: 'pt-BR',
-      // Sem location bias para permitir qualquer lugar do mundo
-      // mas dá preferência a Belém quando relevante
-      locationBias: new google.maps.LatLngBounds(
-        new google.maps.LatLng(-2.5, -49.5),
-        new google.maps.LatLng(-0.5, -47.0)
-      ),
-    };
-    acService.getPlacePredictions(req, (preds, status)=>{
-      loading.style.display='none';
-      if(status!==google.maps.places.PlacesServiceStatus.OK||!preds){
-        searchGeoapify(q); return;
-      }
-      renderGooglePredictions(preds, q);
-    });
+function doSearch(q){
+  if(acService&&sessionToken){
+    searchGooglePlaces(q);
   } else {
-    // Fallback: Geoapify
+    // Tenta inicializar e usa Geoapify enquanto isso
+    initPlaces();
     searchGeoapify(q);
   }
 }
 
-function renderGooglePredictions(preds, q){
-  const el=document.getElementById('dest-list');
-  const localItems=el.querySelectorAll('.ac-item[data-local]');
-  let html=[...localItems].map(e=>e.outerHTML).join('');
-
-  if(preds.length){
-    html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 6px;display:flex;align-items:center;gap:5px;">
-      <img src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-non-white3.png" style="height:14px;opacity:.5;" alt="Google"/>
-    </div>`;
-    html+=preds.map(p=>{
-      const main=p.structured_formatting.main_text;
-      const sec=p.structured_formatting.secondary_text||'';
-      const pid=p.place_id;
-      const mainEsc=main.replace(/'/g,"\\'");
-      const secEsc=sec.replace(/'/g,"\\'");
-      // Destaque nas letras que batem com a busca
-      const hl=p.structured_formatting.main_text_matched_substrings||[];
-      let highlighted=main;
-      if(hl.length){
-        let res='';
-        let last=0;
-        hl.forEach(m=>{
-          res+=main.slice(last,m.offset)+`<b style="color:#fff;">`+main.slice(m.offset,m.offset+m.length)+'</b>';
-          last=m.offset+m.length;
-        });
-        res+=main.slice(last);
-        highlighted=res;
-      }
-      return `<div class="ac-item" onclick="pickGooglePlace('${pid}','${mainEsc}','${secEsc}')">
-        <div class="ac-ic" style="background:var(--g3);">
-          <i class="ti ti-map-pin"></i>
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${highlighted}</div>
-          <div style="font-size:11px;color:var(--g4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sec}</div>
-        </div>
-      </div>`;
-    }).join('');
-  } else {
-    html+='<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado para "'+q+'"</div>';
+function searchGooglePlaces(q){
+  const loading=document.getElementById('ac-loading');
+  const req={
+    input: q,
+    sessionToken,
+    language: 'pt-BR',
+  };
+  // Adiciona bias por localização se tivermos GPS
+  if(userLatLng){
+    req.location=userLatLng;
+    req.radius=50000; // 50km bias mas não restringe
   }
+  acService.getPlacePredictions(req,(preds,status)=>{
+    loading.style.display='none';
+    if(status===google.maps.places.PlacesServiceStatus.OK&&preds&&preds.length){
+      renderGoogleResults(preds);
+    } else {
+      // Fallback Geoapify
+      searchGeoapify(q);
+    }
+  });
+}
+
+function renderGoogleResults(preds){
+  const el=document.getElementById('dest-list');
+  // Mantém destinos internos do hospital
+  const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
+  let html=localItems.map(e=>e.outerHTML).join('');
+
+  preds.forEach(p=>{
+    const main=p.structured_formatting.main_text;
+    const sec=p.structured_formatting.secondary_text||'';
+    const pid=p.place_id;
+    const dist=p.distance_meters?formatDist(p.distance_meters):'';
+
+    // Negrito nas letras que batem — igual Uber
+    let mainHtml=main;
+    const matches=p.structured_formatting.main_text_matched_substrings||[];
+    if(matches.length){
+      let res='',last=0;
+      [...matches].sort((a,b)=>a.offset-b.offset).forEach(m=>{
+        res+=escHtml(main.slice(last,m.offset));
+        res+=`<b style="color:#fff;font-weight:700;">`+escHtml(main.slice(m.offset,m.offset+m.length))+`</b>`;
+        last=m.offset+m.length;
+      });
+      res+=escHtml(main.slice(last));
+      mainHtml=res;
+    }
+
+    const pidEsc=pid.replace(/'/g,"\\'");
+    const mainEsc=main.replace(/'/g,"\\'");
+    const secEsc=sec.replace(/'/g,"\\'");
+
+    // Ícone por tipo
+    const types=p.types||[];
+    const icon=types.some(t=>['hospital','health','doctor','pharmacy'].includes(t))?'ti-building-hospital':
+               types.some(t=>['route','street_address'].includes(t))?'ti-road':
+               types.some(t=>['locality','administrative_area_level_2'].includes(t))?'ti-building':
+               types.some(t=>['country'].includes(t))?'ti-world':
+               types.some(t=>['establishment','point_of_interest'].includes(t))?'ti-map-pin-star':
+               'ti-map-pin';
+
+    html+=`<div class="ac-item" style="padding:12px 14px;" onclick="pickGooglePlace('${pidEsc}','${mainEsc}','${secEsc}')">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="ti ${icon}" style="font-size:16px;color:var(--g4);"></i>
+      </div>
+      <div style="flex:1;min-width:0;margin-left:12px;">
+        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;">${mainHtml}</div>
+        <div style="font-size:12px;color:var(--g4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dist?dist+' · ':''}${sec}</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--g2);margin:0 14px;"></div>`;
+  });
+
+  // Logo Google no final
+  html+=`<div style="padding:8px 14px;display:flex;align-items:center;gap:6px;opacity:.4;">
+    <span style="font-size:10px;color:var(--g4);">Resultados do</span>
+    <i class="ti ti-brand-google" style="font-size:12px;color:var(--g4);"></i>
+    <span style="font-size:10px;color:var(--g4);">Google</span>
+  </div>`;
+
   el.innerHTML=html;
   el.scrollTop=0;
 }
 
-// Resolve place_id para lat/lng usando Places Details
-function pickGooglePlace(placeId, name, address){
+function formatDist(m){
+  return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';
+}
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function pickGooglePlace(placeId,name,address){
   const loading=document.getElementById('ac-loading');
   loading.style.display='block';
-  // Usa um div temporário para PlacesService (precisa de um elemento no DOM)
-  let svcDiv=document.getElementById('places-svc-div');
-  if(!svcDiv){ svcDiv=document.createElement('div'); svcDiv.id='places-svc-div'; document.body.appendChild(svcDiv); }
-  const svc=new google.maps.places.PlacesService(svcDiv);
-  svc.getDetails({
+  if(!placesService){
+    const d=document.createElement('div');
+    document.body.appendChild(d);
+    placesService=new google.maps.places.PlacesService(d);
+  }
+  placesService.getDetails({
     placeId,
     fields:['geometry','name','formatted_address'],
     sessionToken
   },(place,status)=>{
     loading.style.display='none';
-    // Renova session token após uso
     sessionToken=new google.maps.places.AutocompleteSessionToken();
-    if(status===google.maps.places.PlacesServiceStatus.OK&&place.geometry){
+    if(status===google.maps.places.PlacesServiceStatus.OK&&place&&place.geometry){
       const lat=place.geometry.location.lat();
       const lng=place.geometry.location.lng();
-      selDest={name:place.name||name, sub:place.formatted_address||address, lat, lng, dist:'—'};
+      selDest={name:place.name||name,sub:place.formatted_address||address,lat,lng,dist:'—'};
       document.getElementById('dest-input').value=place.name||name;
       document.getElementById('vtype-sub').textContent='HMPá → '+(place.name||name);
-      drawRoute(lat, lng, place.name||name);
+      drawRoute(lat,lng,place.name||name);
       gotoScr('scr-vtype');
     } else {
-      // Fallback sem coordenada exata
-      pickSearchResult(0,0,name,address);
+      toast('Não foi possível obter localização. Tente outro endereço.');
     }
   });
 }
@@ -1026,44 +1063,49 @@ async function searchGeoapify(q){
   const loading=document.getElementById('ac-loading');
   const el=document.getElementById('dest-list');
   try{
-    const url=`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&lang=pt&limit=7&apiKey=6d913107894a4225848c23500e0f9b56`;
+    const bias=userLatLng?`&bias=proximity:${userLatLng.lng()},${userLatLng.lat()}|countrycode:auto`:'&bias=proximity:-48.5039,-1.4558';
+    const url=`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&lang=pt&limit=6${bias}&apiKey=${GEOKEY}`;
     const r=await fetch(url);
     const data=await r.json();
     loading.style.display='none';
     if(!data.features||!data.features.length){
-      el.innerHTML+='<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado encontrado</div>';
+      const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
+      el.innerHTML=localItems.map(e=>e.outerHTML).join('')+'<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado para "'+q+'"</div>';
       return;
     }
-    const belemLat=-1.4558, belemLon=-48.5039;
-    const nearby=[], others=[];
+    const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
+    let html=localItems.map(e=>e.outerHTML).join('');
     data.features.forEach(f=>{
-      const [lon,lat]=f.geometry.coordinates;
-      const dist=Math.sqrt(Math.pow(lat-belemLat,2)+Math.pow(lon-belemLon,2));
-      if(dist<2) nearby.push(f); else others.push(f);
-    });
-    function renderGeo(f){
       const p=f.properties;
       const [lon,lat]=f.geometry.coordinates;
       const name=p.name||p.address_line1||p.street||q;
-      const sub=[p.address_line2,p.city||p.town,p.state,p.country].filter(Boolean).join(', ');
+      const addr=[p.address_line2,p.city||p.town,p.state,p.country].filter(Boolean).join(', ');
+      const dist=userLatLng?formatDist(calcDist(userLatLng.lat(),userLatLng.lng(),lat,lon)):'';
       const nameEsc=name.replace(/'/g,"\\'");
-      const subEsc=sub.replace(/'/g,"\\'");
-      return `<div class="ac-item" onclick="pickSearchResult(${lat},${lon},'${nameEsc}','${subEsc}')">
-        <div class="ac-ic" style="background:var(--g3);"><i class="ti ti-map-pin"></i></div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-          <div style="font-size:11px;color:var(--g4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub||'—'}</div>
+      const addrEsc=addr.replace(/'/g,"\\'");
+      const icon=p.result_type==='amenity'?'ti-map-pin-star':p.result_type==='street'?'ti-road':p.result_type==='city'?'ti-building':'ti-map-pin';
+      html+=`<div class="ac-item" style="padding:12px 14px;" onclick="pickSearchResult(${lat},${lon},'${nameEsc}','${addrEsc}')">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="ti ${icon}" style="font-size:16px;color:var(--g4);"></i>
         </div>
-      </div>`;
-    }
-    const localItems=el.querySelectorAll('.ac-item[data-local]');
-    let html=[...localItems].map(e=>e.outerHTML).join('');
-    if(nearby.length) html+=`<div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;">📍 Próximo a Belém</div>`+nearby.map(renderGeo).join('');
-    if(others.length) html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;">🌍 Qualquer lugar</div>`+others.map(renderGeo).join('');
-    if(!nearby.length&&!others.length) html+=data.features.map(renderGeo).join('');
+        <div style="flex:1;min-width:0;margin-left:12px;">
+          <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+          <div style="font-size:12px;color:var(--g4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dist?dist+' · ':''}${addr}</div>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--g2);margin:0 14px;"></div>`;
+    });
     el.innerHTML=html;
     el.scrollTop=0;
-  }catch(e){loading.style.display='none';}
+  }catch(e){loading.style.display='none';console.error(e);}
+}
+
+function calcDist(lat1,lon1,lat2,lon2){
+  const R=6371000;
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
 
 function pickSearchResult(lat,lon,name,sub){
