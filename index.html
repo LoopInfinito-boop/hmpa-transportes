@@ -331,13 +331,14 @@ html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflo
       <div class="rp"><div class="rp-dot" style="background:var(--green);"></div><input class="rp-in" value="Hospital da Mulher do Pará" readonly style="color:var(--g4);font-size:13px;"/></div>
       <div class="rp-line"></div>
       <div id="extra-stops"></div>
-      <div class="rp"><div class="rp-dot" style="background:#fff;"></div><input class="rp-in" id="dest-input" placeholder="Buscar destino ou endereço…" oninput="onDestIn(this.value)" autocomplete="off"/></div>
+      <div class="rp"><div class="rp-dot" style="background:#fff;"></div><input class="rp-in" id="dest-input" placeholder="Buscar destino ou endereço…" oninput="onDestIn(this.value)" onkeyup="onDestIn(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/></div>
       <button class="add-stop" onclick="addStop()"><i class="ti ti-plus" style="font-size:13px;"></i> Adicionar parada</button>
     </div>
     <div class="sec-label" id="dest-label">Destinos frequentes</div>
-    <div class="scroll" id="dest-list">
-      <div id="ac-loading" style="display:none;padding:14px;text-align:center;color:var(--g4);font-size:13px;">
-        <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--g3);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:6px;"></div><br/>Buscando...
+    <div class="scroll" id="dest-list" style="min-height:200px;">
+      <div id="ac-loading" style="display:none;padding:20px;text-align:center;color:var(--g4);font-size:13px;">
+        <div style="display:inline-block;width:22px;height:22px;border:2px solid var(--g3);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:8px;"></div>
+        <div>Buscando em qualquer lugar…</div>
       </div>
     </div>
   </div>
@@ -890,17 +891,22 @@ const GEOAPIFY_KEY='6d913107894a4225848c23500e0f9b56';
 function onDestIn(v){
   clearTimeout(searchTimer);
   const loading=document.getElementById('ac-loading');
-  if(!v.trim()){
+  const el=document.getElementById('dest-list');
+
+  if(!v||!v.trim()){
     buildDestList('');
     document.getElementById('dest-label').textContent='Destinos frequentes';
+    loading.style.display='none';
     return;
   }
+
+  // Show local hospital matches immediately
   buildDestList(v);
   document.getElementById('dest-label').textContent='Resultados';
-  if(v.length>=2){
-    loading.style.display='block';
-    searchTimer=setTimeout(()=>searchGeoapify(v),300);
-  }
+
+  // Always search Geoapify after short delay
+  loading.style.display='block';
+  searchTimer=setTimeout(()=>searchGeoapify(v.trim()), 400);
 }
 
 async function searchGeoapify(q){
@@ -963,7 +969,13 @@ async function searchGeoapify(q){
       html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;display:flex;align-items:center;gap:5px;"><i class="ti ti-world" style="font-size:12px;"></i> Qualquer lugar</div>`;
       html+=others.map(renderGeo).join('');
     }
+    // Se não tem nada separado, mostra tudo junto
+    if(!nearby.length && !others.length){
+      html+=data.features.map(renderGeo).join('');
+    }
     el.innerHTML=html;
+    // Scroll to results
+    el.scrollTop=0;
   }catch(e){
     loading.style.display='none';
     console.error('Geoapify:',e);
@@ -1135,11 +1147,19 @@ function gotoScr(id){
   if(id!==currentId()) prevScr=currentId();
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const tall=['scr-login','scr-chat','scr-rating','scr-activity','scr-menu'];
+  const tall=['scr-login','scr-chat','scr-rating','scr-activity','scr-menu','scr-dest'];
   document.getElementById('bc').className='bc '+(tall.includes(id)?'tall':'short');
   document.getElementById('ftop').style.display=(['scr-login'].includes(id)?'none':'flex');
   document.getElementById('gps-fab').style.display=(['scr-login'].includes(id)?'none':'flex');
   setTimeout(()=>map.invalidateSize(),150);
+  if(id==='scr-dest'){
+    setTimeout(()=>{
+      const inp=document.getElementById('dest-input');
+      inp.focus();
+      // Re-trigger search if already has value
+      if(inp.value) onDestIn(inp.value);
+    },300);
+  }
 }
 
 function currentId(){return [...document.querySelectorAll('.scr')].find(s=>s.classList.contains('active'))?.id||'scr-home';}
