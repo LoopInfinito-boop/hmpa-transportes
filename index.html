@@ -719,6 +719,9 @@ const ACTIVITIES = [
 // ══════════════════════════════════════════════
 //  MAP INIT
 // ══════════════════════════════════════════════
+// Try Google Places if available
+setTimeout(initPlaces, 1500);
+
 const map = L.map('map',{zoomControl:false,attributionControl:false}).setView(ORIGIN,16);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
@@ -886,48 +889,151 @@ function addDestino(){
 // ══════════════════════════════════════════════
 //  DEST / ROUTE
 // ══════════════════════════════════════════════
-const GEOAPIFY_KEY='6d913107894a4225848c23500e0f9b56';
+const GKEY='AIzaSyA3pvM7opCbIRvJBRuVYDNGpNLOb8gv4Og';
+let acService=null, sessionToken=null;
+
+// Inicializa Google Places após carregar a lib
+function initPlaces(){
+  if(window.google&&google.maps&&google.maps.places){
+    acService=new google.maps.places.AutocompleteService();
+    sessionToken=new google.maps.places.AutocompleteSessionToken();
+  }
+}
 
 function onDestIn(v){
   clearTimeout(searchTimer);
   const loading=document.getElementById('ac-loading');
   const el=document.getElementById('dest-list');
-
   if(!v||!v.trim()){
     buildDestList('');
     document.getElementById('dest-label').textContent='Destinos frequentes';
     loading.style.display='none';
     return;
   }
-
-  // Show local hospital matches immediately
   buildDestList(v);
   document.getElementById('dest-label').textContent='Resultados';
-
-  // Always search Geoapify after short delay
   loading.style.display='block';
-  searchTimer=setTimeout(()=>searchGeoapify(v.trim()), 400);
+  searchTimer=setTimeout(()=>searchPlaces(v.trim()), 300);
+}
+
+function searchPlaces(q){
+  const loading=document.getElementById('ac-loading');
+  const el=document.getElementById('dest-list');
+
+  // Tenta Google Places primeiro (melhor qualidade, igual Uber)
+  if(acService){
+    const req={
+      input: q,
+      sessionToken,
+      language: 'pt-BR',
+      // Sem location bias para permitir qualquer lugar do mundo
+      // mas dá preferência a Belém quando relevante
+      locationBias: new google.maps.LatLngBounds(
+        new google.maps.LatLng(-2.5, -49.5),
+        new google.maps.LatLng(-0.5, -47.0)
+      ),
+    };
+    acService.getPlacePredictions(req, (preds, status)=>{
+      loading.style.display='none';
+      if(status!==google.maps.places.PlacesServiceStatus.OK||!preds){
+        searchGeoapify(q); return;
+      }
+      renderGooglePredictions(preds, q);
+    });
+  } else {
+    // Fallback: Geoapify
+    searchGeoapify(q);
+  }
+}
+
+function renderGooglePredictions(preds, q){
+  const el=document.getElementById('dest-list');
+  const localItems=el.querySelectorAll('.ac-item[data-local]');
+  let html=[...localItems].map(e=>e.outerHTML).join('');
+
+  if(preds.length){
+    html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 6px;display:flex;align-items:center;gap:5px;">
+      <img src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-non-white3.png" style="height:14px;opacity:.5;" alt="Google"/>
+    </div>`;
+    html+=preds.map(p=>{
+      const main=p.structured_formatting.main_text;
+      const sec=p.structured_formatting.secondary_text||'';
+      const pid=p.place_id;
+      const mainEsc=main.replace(/'/g,"\\'");
+      const secEsc=sec.replace(/'/g,"\\'");
+      // Destaque nas letras que batem com a busca
+      const hl=p.structured_formatting.main_text_matched_substrings||[];
+      let highlighted=main;
+      if(hl.length){
+        let res='';
+        let last=0;
+        hl.forEach(m=>{
+          res+=main.slice(last,m.offset)+`<b style="color:#fff;">`+main.slice(m.offset,m.offset+m.length)+'</b>';
+          last=m.offset+m.length;
+        });
+        res+=main.slice(last);
+        highlighted=res;
+      }
+      return `<div class="ac-item" onclick="pickGooglePlace('${pid}','${mainEsc}','${secEsc}')">
+        <div class="ac-ic" style="background:var(--g3);">
+          <i class="ti ti-map-pin"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${highlighted}</div>
+          <div style="font-size:11px;color:var(--g4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sec}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    html+='<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado para "'+q+'"</div>';
+  }
+  el.innerHTML=html;
+  el.scrollTop=0;
+}
+
+// Resolve place_id para lat/lng usando Places Details
+function pickGooglePlace(placeId, name, address){
+  const loading=document.getElementById('ac-loading');
+  loading.style.display='block';
+  // Usa um div temporário para PlacesService (precisa de um elemento no DOM)
+  let svcDiv=document.getElementById('places-svc-div');
+  if(!svcDiv){ svcDiv=document.createElement('div'); svcDiv.id='places-svc-div'; document.body.appendChild(svcDiv); }
+  const svc=new google.maps.places.PlacesService(svcDiv);
+  svc.getDetails({
+    placeId,
+    fields:['geometry','name','formatted_address'],
+    sessionToken
+  },(place,status)=>{
+    loading.style.display='none';
+    // Renova session token após uso
+    sessionToken=new google.maps.places.AutocompleteSessionToken();
+    if(status===google.maps.places.PlacesServiceStatus.OK&&place.geometry){
+      const lat=place.geometry.location.lat();
+      const lng=place.geometry.location.lng();
+      selDest={name:place.name||name, sub:place.formatted_address||address, lat, lng, dist:'—'};
+      document.getElementById('dest-input').value=place.name||name;
+      document.getElementById('vtype-sub').textContent='HMPá → '+(place.name||name);
+      drawRoute(lat, lng, place.name||name);
+      gotoScr('scr-vtype');
+    } else {
+      // Fallback sem coordenada exata
+      pickSearchResult(0,0,name,address);
+    }
+  });
 }
 
 async function searchGeoapify(q){
   const loading=document.getElementById('ac-loading');
   const el=document.getElementById('dest-list');
-  loading.style.display='block';
   try{
-    const url=`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&lang=pt&limit=7&apiKey=${GEOAPIFY_KEY}`;
+    const url=`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&lang=pt&limit=7&apiKey=6d913107894a4225848c23500e0f9b56`;
     const r=await fetch(url);
     const data=await r.json();
     loading.style.display='none';
-
     if(!data.features||!data.features.length){
-      const localItems=el.querySelectorAll('.ac-item[data-local]');
-      let html=[...localItems].map(e=>e.outerHTML).join('');
-      html+='<div style="padding:14px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado encontrado</div>';
-      el.innerHTML=html;
+      el.innerHTML+='<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado encontrado</div>';
       return;
     }
-
-    // Separa resultados próximos a Belém vs outros lugares do mundo
     const belemLat=-1.4558, belemLon=-48.5039;
     const nearby=[], others=[];
     data.features.forEach(f=>{
@@ -935,7 +1041,6 @@ async function searchGeoapify(q){
       const dist=Math.sqrt(Math.pow(lat-belemLat,2)+Math.pow(lon-belemLon,2));
       if(dist<2) nearby.push(f); else others.push(f);
     });
-
     function renderGeo(f){
       const p=f.properties;
       const [lon,lat]=f.geometry.coordinates;
@@ -943,43 +1048,22 @@ async function searchGeoapify(q){
       const sub=[p.address_line2,p.city||p.town,p.state,p.country].filter(Boolean).join(', ');
       const nameEsc=name.replace(/'/g,"\\'");
       const subEsc=sub.replace(/'/g,"\\'");
-      const cats=p.categories||[];
-      const icon=cats.some(c=>c.includes('health'))?'ti-building-hospital':
-                 p.result_type==='street'?'ti-road':
-                 p.result_type==='city'?'ti-building':
-                 p.result_type==='country'?'ti-world':'ti-map-pin';
       return `<div class="ac-item" onclick="pickSearchResult(${lat},${lon},'${nameEsc}','${subEsc}')">
-        <div class="ac-ic" style="background:var(--g3);"><i class="ti ${icon}"></i></div>
+        <div class="ac-ic" style="background:var(--g3);"><i class="ti ti-map-pin"></i></div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
           <div style="font-size:11px;color:var(--g4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sub||'—'}</div>
         </div>
       </div>`;
     }
-
-    // Mantém destinos do hospital no topo
     const localItems=el.querySelectorAll('.ac-item[data-local]');
     let html=[...localItems].map(e=>e.outerHTML).join('');
-
-    if(nearby.length){
-      html+=`<div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;display:flex;align-items:center;gap:5px;"><i class="ti ti-map-pin-filled" style="font-size:12px;"></i> Próximo a Belém</div>`;
-      html+=nearby.map(renderGeo).join('');
-    }
-    if(others.length){
-      html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;display:flex;align-items:center;gap:5px;"><i class="ti ti-world" style="font-size:12px;"></i> Qualquer lugar</div>`;
-      html+=others.map(renderGeo).join('');
-    }
-    // Se não tem nada separado, mostra tudo junto
-    if(!nearby.length && !others.length){
-      html+=data.features.map(renderGeo).join('');
-    }
+    if(nearby.length) html+=`<div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;">📍 Próximo a Belém</div>`+nearby.map(renderGeo).join('');
+    if(others.length) html+=`<div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px;">🌍 Qualquer lugar</div>`+others.map(renderGeo).join('');
+    if(!nearby.length&&!others.length) html+=data.features.map(renderGeo).join('');
     el.innerHTML=html;
-    // Scroll to results
     el.scrollTop=0;
-  }catch(e){
-    loading.style.display='none';
-    console.error('Geoapify:',e);
-  }
+  }catch(e){loading.style.display='none';}
 }
 
 function pickSearchResult(lat,lon,name,sub){
@@ -1202,5 +1286,6 @@ function toast(msg){
 // INIT
 gotoScr('scr-login');
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3pvM7opCbIRvJBRuVYDNGpNLOb8gv4Og&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
