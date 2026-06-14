@@ -335,7 +335,11 @@ html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflo
       <button class="add-stop" onclick="addStop()"><i class="ti ti-plus" style="font-size:13px;"></i> Adicionar parada</button>
     </div>
     <div class="sec-label" id="dest-label">Destinos frequentes</div>
-    <div class="scroll" id="dest-list"></div>
+    <div class="scroll" id="dest-list">
+      <div id="ac-loading" style="display:none;padding:14px;text-align:center;color:var(--g4);font-size:13px;">
+        <div style="display:inline-block;width:20px;height:20px;border:2px solid var(--g3);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:6px;"></div><br/>Buscando...
+      </div>
+    </div>
   </div>
 
   <!-- VTYPE -->
@@ -899,11 +903,11 @@ async function searchNominatim(q){
   }catch(e){}
 }
 
-function pickSearchResult(lat,lon,name){
-  selDest={name:name.split(',')[0],lat:parseFloat(lat),lng:parseFloat(lon),dist:'—'};
-  document.getElementById('dest-input').value=selDest.name;
-  document.getElementById('vtype-sub').textContent='HMPá → '+selDest.name;
-  drawRoute(selDest.lat,selDest.lng,selDest.name);
+function pickSearchResult(lat,lon,name,sub){
+  selDest={name,sub:sub||'',lat:parseFloat(lat),lng:parseFloat(lon),dist:'—'};
+  document.getElementById('dest-input').value=name;
+  document.getElementById('vtype-sub').textContent='HMPá → '+name;
+  drawRoute(selDest.lat,selDest.lng,name);
   gotoScr('scr-vtype');
 }
 
