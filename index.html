@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HMPá — Transporte Hospitalar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--green:#06C167;--green-dark:#048848;--red:#D1293D;--amber:#F5A623;--blue:#276EF1;--gray4:#767676;--r:12px;--font:'Inter',system-ui,sans-serif;}
+html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflow:hidden;}
+#app{display:flex;height:100vh;position:relative;}
+#map{position:absolute;inset:0;z-index:0;}
+
+/* dark map filter */
+#map{filter:brightness(0.85) saturate(0.9);}
+
+.topbar{position:absolute;top:0;left:0;right:0;z-index:15;padding:16px 16px 0;display:flex;align-items:center;justify-content:space-between;pointer-events:none;}
+.logo{font-size:22px;font-weight:800;color:#fff;background:#000;border-radius:10px;padding:6px 12px;pointer-events:all;letter-spacing:-0.5px;}
+.logo span{color:var(--green);}
+.topbar-right{display:flex;gap:8px;pointer-events:all;}
+.icon-btn{width:38px;height:38px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);}
+.icon-btn:hover{background:#111;}
+
+.eta-pill{position:absolute;top:72px;left:50%;transform:translateX(-50%);background:#000;color:#fff;border-radius:30px;padding:8px 18px;font-size:13px;font-weight:700;white-space:nowrap;z-index:15;box-shadow:0 2px 10px rgba(0,0,0,.5);display:none;}
+
+.bottom-card{position:absolute;bottom:0;left:0;right:0;background:#000;border-radius:20px 20px 0 0;z-index:20;display:flex;flex-direction:column;max-height:72vh;}
+.drag-handle{width:36px;height:4px;background:#333;border-radius:2px;margin:12px auto 0;flex-shrink:0;}
+
+.screen{display:none;flex-direction:column;overflow:hidden;flex:1;}
+.screen.active{display:flex;}
+
+/* HOME */
+.search-pill{margin:10px 16px 10px;background:#1a1a1a;border-radius:var(--r);padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;border:1px solid #2a2a2a;flex-shrink:0;}
+.search-pill:hover{background:#222;}
+.search-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.section-label{font-size:11px;font-weight:700;color:var(--gray4);letter-spacing:.08em;text-transform:uppercase;padding:0 16px;margin-bottom:8px;flex-shrink:0;}
+.service-row{display:flex;gap:8px;padding:0 16px;margin-bottom:12px;flex-shrink:0;}
+.svc{flex:1;background:#1a1a1a;border-radius:var(--r);padding:11px 8px;cursor:pointer;border:2px solid transparent;text-align:center;transition:all .15s;}
+.svc:hover,.svc.sel{background:#111;border-color:var(--green);}
+.svc i{font-size:24px;display:block;margin-bottom:4px;}
+.svc-name{font-size:12px;font-weight:700;}
+.svc-sub{font-size:10px;color:var(--gray4);margin-top:1px;}
+.recent-scroll{overflow-y:auto;padding:0 16px 4px;flex:1;}
+.ri{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;}
+.ri:last-child{border-bottom:none;}
+.ri:hover .ri-name{color:var(--green);}
+.ri-ic{width:34px;height:34px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ri-ic i{font-size:15px;color:#888;}
+.ri-name{font-size:13px;font-weight:600;transition:color .15s;}
+.ri-sub{font-size:11px;color:var(--gray4);}
+
+/* DEST */
+.dest-header{padding:10px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1a1a1a;flex-shrink:0;}
+.back-btn{width:32px;height:32px;border-radius:50%;background:#1a1a1a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;}
+.route-builder{padding:10px 16px;flex-shrink:0;}
+.rp{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.rp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.rp-dot.o{background:var(--green);}
+.rp-dot.d{background:#fff;}
+.rp-line{width:2px;height:14px;background:#333;margin-left:4px;}
+.rp-in{flex:1;background:#1a1a1a;border:none;border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;font-family:var(--font);outline:none;}
+.rp-in:focus{background:#222;}
+.add-stop-btn{display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;margin-left:20px;}
+.ac-list{flex:1;overflow-y:auto;padding:0 16px 10px;}
+.ac-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;}
+.ac-item:hover .ac-name{color:var(--green);}
+.ac-item:last-child{border-bottom:none;}
+.ac-ic{width:34px;height:34px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ac-name{font-size:13px;font-weight:600;transition:color .15s;}
+.ac-sub{font-size:11px;color:var(--gray4);}
+
+/* SEARCH results from Nominatim */
+.search-result{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;}
+.search-result:hover .sr-name{color:var(--green);}
+.sr-ic{width:34px;height:34px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sr-name{font-size:13px;font-weight:600;}
+.sr-addr{font-size:11px;color:var(--gray4);margin-top:1px;}
+
+/* VTYPE */
+.vtype-scroll{overflow-y:auto;padding:0 16px 6px;}
+.vtc{background:#1a1a1a;border-radius:var(--r);padding:13px;margin-bottom:8px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;gap:12px;transition:all .15s;}
+.vtc:hover,.vtc.sel{border-color:var(--green);background:#111;}
+.vtc-img i{font-size:34px;}
+.vtc-name{font-size:14px;font-weight:700;}
+.vtc-desc{font-size:11px;color:var(--gray4);margin-top:2px;}
+.vtc-eta{font-size:11px;color:var(--green);font-weight:600;margin-top:3px;}
+.vtc-km{font-size:13px;font-weight:700;margin-left:auto;text-align:right;flex-shrink:0;min-width:50px;}
+.form-block{margin:0 16px 8px;background:#1a1a1a;border-radius:var(--r);padding:12px;flex-shrink:0;}
+.form-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+.f-grp{margin-bottom:7px;}
+.f-lbl{font-size:10px;font-weight:700;color:var(--gray4);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px;display:block;}
+.f-in{width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;font-family:var(--font);outline:none;}
+.f-in:focus{border-color:var(--green);}
+.f-sel{width:100%;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:8px 10px;font-size:13px;color:#fff;font-family:var(--font);outline:none;appearance:none;}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* CONFIRM */
+.confirm-body{padding:14px 16px;overflow-y:auto;flex:1;}
+.trip-stats{display:flex;gap:8px;margin-bottom:12px;}
+.ts-block{flex:1;background:#1a1a1a;border-radius:10px;padding:10px;text-align:center;}
+.ts-val{font-size:16px;font-weight:800;}
+.ts-lbl{font-size:10px;color:var(--gray4);margin-top:1px;}
+.driver-card{display:flex;align-items:center;gap:12px;background:#1a1a1a;border-radius:var(--r);padding:12px;margin-bottom:10px;}
+.dav{width:44px;height:44px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;}
+
+/* RIDING */
+.riding-bottom{padding:14px 16px;flex-shrink:0;}
+.prog{height:4px;background:#1a1a1a;border-radius:2px;margin-bottom:12px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--green);border-radius:2px;animation:prog 12s linear forwards;}
+@keyframes prog{from{width:3%}to{width:100%}}
+.rd-drv{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.rd-av{width:42px;height:42px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
+.rd-actions{display:flex;gap:8px;}
+.rd-btn{flex:1;padding:12px;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);}
+
+/* DRIVER */
+.drv-bar{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tog{position:relative;width:52px;height:26px;background:#1a1a1a;border-radius:13px;cursor:pointer;border:none;transition:background .25s;}
+.tog.on{background:var(--green);}
+.tog-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .25s;}
+.tog.on .tog-knob{left:29px;}
+.earn-box{display:flex;margin:0 16px 10px;background:#1a1a1a;border-radius:var(--r);overflow:hidden;flex-shrink:0;}
+.eb{flex:1;padding:10px;text-align:center;border-right:1px solid #2a2a2a;}
+.eb:last-child{border-right:none;}
+.eb-val{font-size:17px;font-weight:800;color:var(--green);}
+.eb-lbl{font-size:10px;color:var(--gray4);margin-top:1px;}
+.req-card{margin:0 16px 8px;background:#1a1a1a;border:2px solid var(--green);border-radius:var(--r);padding:13px;flex-shrink:0;animation:pb 1.5s ease-in-out infinite;}
+@keyframes pb{0%,100%{border-color:var(--green);}50%{border-color:#048848;}}
+.req-timer{height:3px;background:#2a2a2a;border-radius:2px;margin-bottom:10px;overflow:hidden;}
+.req-timer-fill{height:100%;background:var(--amber);animation:drain 15s linear forwards;}
+@keyframes drain{from{width:100%}to{width:0%}}
+.req-actions{display:flex;gap:8px;}
+
+/* ACTIVITY */
+.act-hd{padding:12px 16px;flex-shrink:0;}
+.trip-hist{overflow-y:auto;padding:0 16px 10px;flex:1;}
+.th-it{background:#1a1a1a;border-radius:var(--r);padding:13px;margin-bottom:8px;}
+.th-top{display:flex;justify-content:space-between;margin-bottom:7px;}
+.th-date{font-size:11px;color:var(--gray4);}
+.th-st{font-size:11px;font-weight:700;}
+.th-st.ok{color:var(--green);}
+.th-st.no{color:var(--red);}
+.th-route{font-size:13px;font-weight:600;margin-bottom:2px;}
+.th-sub{font-size:11px;color:var(--gray4);}
+.th-bot{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid #2a2a2a;font-size:11px;}
+
+/* MENU */
+.menu-hd{padding:14px 16px 12px;border-bottom:1px solid #1a1a1a;flex-shrink:0;}
+.m-av{width:52px;height:52px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;margin-bottom:8px;}
+.menu-items{overflow-y:auto;flex:1;}
+.mi{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .1s;}
+.mi:hover{background:#0d0d0d;}
+.mi-ic{width:34px;height:34px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mi-ic i{font-size:17px;}
+
+.bottom-nav{display:flex;background:#000;border-top:1px solid #1a1a1a;flex-shrink:0;}
+.bn{flex:1;padding:9px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--gray4);transition:color .15s;}
+.bn.active,.bn:hover{color:#fff;}
+.bn i{font-size:19px;}
+.bn span{font-size:10px;font-weight:600;}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+.sheet-bg.open{display:flex;}
+.sheet{background:#111;border-radius:20px 20px 0 0;width:100%;max-height:85vh;display:flex;flex-direction:column;}
+.sh-handle{width:32px;height:4px;background:#333;border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+.sh-hd{padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #222;flex-shrink:0;}
+.sh-hd h3{font-size:16px;font-weight:700;}
+.sh-close{background:#1a1a1a;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;}
+.sh-body{padding:16px;overflow-y:auto;flex:1;}
+
+.btn-main{width:100%;padding:13px;background:var(--green);color:#000;font-size:15px;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);margin-top:4px;}
+.btn-main:hover{background:var(--green-dark);color:#fff;}
+.btn-out{width:100%;padding:11px;background:transparent;color:#fff;font-size:13px;font-weight:700;border:1px solid #333;border-radius:var(--r);cursor:pointer;font-family:var(--font);margin-top:6px;}
+.btn-out:hover{background:#111;}
+
+.notif{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;border:1px solid #2a2a2a;border-radius:30px;padding:10px 18px;font-size:13px;font-weight:600;color:#fff;z-index:999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none;}
+.notif.show{opacity:1;bottom:30px;}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+.b-green{background:rgba(6,193,103,.15);color:var(--green);}
+.b-red{background:rgba(209,41,61,.15);color:var(--red);}
+.b-amber{background:rgba(245,166,35,.15);color:var(--amber);}
+.pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);animation:pk 1.5s infinite;}
+@keyframes pk{0%,100%{transform:scale(1);}50%{transform:scale(1.5);opacity:.5;}}
+@keyframes spin{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+
+/* Leaflet overrides */
+.leaflet-control-attribution{display:none!important;}
+.leaflet-control-zoom{display:none!important;}
+.leaflet-tile-pane{filter:hue-rotate(180deg) invert(1) brightness(0.4) contrast(1.2);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+  <div class="eta-pill" id="eta-pill">🚑 Em rota…</div>
+
+  <div class="topbar">
+    <div class="logo">HM<span>Pá</span></div>
+    <div class="topbar-right">
+      <button class="icon-btn" onclick="openSheet('sh-notif')"><i class="ti ti-bell"></i></button>
+      <button class="icon-btn" onclick="goto('scr-menu')"><i class="ti ti-menu-2"></i></button>
+    </div>
+  </div>
+
+  <div class="bottom-card">
+    <div class="drag-handle"></div>
+
+    <!-- HOME -->
+    <div class="screen active" id="scr-home">
+      <div class="search-pill" onclick="goto('scr-dest')">
+        <div class="search-dot"></div>
+        <span style="font-size:14px;color:var(--gray4);">Para onde você vai?</span>
+      </div>
+      <div class="section-label">Tipo de transporte</div>
+      <div class="service-row">
+        <div class="svc sel" onclick="selSvc(this)"><i class="ti ti-ambulance" style="color:var(--red);"></i><div class="svc-name">Ambulância</div><div class="svc-sub">Transporte clínico</div></div>
+        <div class="svc" onclick="selSvc(this)"><i class="ti ti-car-suv" style="color:var(--blue);"></i><div class="svc-name">Apoio</div><div class="svc-sub">Pessoal / material</div></div>
+        <div class="svc" onclick="selSvc(this)"><i class="ti ti-user" style="color:var(--amber);"></i><div class="svc-name">Eu mesmo</div><div class="svc-sub">Demanda própria</div></div>
+      </div>
+      <div class="section-label">Destinos frequentes</div>
+      <div class="recent-scroll" id="recent-list"></div>
+      <nav class="bottom-nav">
+        <button class="bn active" onclick="goto('scr-home');setNav(this)"><i class="ti ti-home"></i><span>Início</span></button>
+        <button class="bn" onclick="goto('scr-activity');setNav(this)"><i class="ti ti-clock"></i><span>Atividade</span></button>
+        <button class="bn" onclick="goto('scr-driver');setNav(this)"><i class="ti ti-steering-wheel"></i><span>Motorista</span></button>
+        <button class="bn" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
+        <button class="bn" onclick="goto('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
+    </div>
+
+    <!-- DEST -->
+    <div class="screen" id="scr-dest">
+      <div class="dest-header">
+        <button class="back-btn" onclick="goto('scr-home')"><i class="ti ti-arrow-left"></i></button>
+        <h2 style="font-size:15px;font-weight:700;">Escolher destino</h2>
+      </div>
+      <div class="route-builder">
+        <div class="rp"><div class="rp-dot o"></div><input class="rp-in" value="Hospital da Mulher do Pará" readonly style="color:var(--gray4);font-size:13px;"/></div>
+        <div class="rp-line"></div>
+        <div id="extra-stops"></div>
+        <div class="rp"><div class="rp-dot d"></div><input class="rp-in" id="dest-input" placeholder="Buscar destino ou endereço em Belém…" oninput="onDestInput(this.value)" autocomplete="off"/></div>
+        <button class="add-stop-btn" onclick="addStop()"><i class="ti ti-plus" style="font-size:13px;"></i> Adicionar parada</button>
+      </div>
+      <div class="section-label" style="margin-top:4px;" id="list-label">Destinos frequentes</div>
+      <div class="ac-list" id="ac-list"></div>
+    </div>
+
+    <!-- VTYPE -->
+    <div class="screen" id="scr-vtype">
+      <div class="dest-header">
+        <button class="back-btn" onclick="goto('scr-dest')"><i class="ti ti-arrow-left"></i></button>
+        <div>
+          <div style="font-size:14px;font-weight:700;">Escolher veículo</div>
+          <div style="font-size:11px;color:var(--gray4);margin-top:1px;" id="vtype-sub"></div>
+        </div>
+      </div>
+      <div class="vtype-scroll">
+        <div class="vtc sel" onclick="selVtype(this,'amb')">
+          <div class="vtc-img"><i class="ti ti-ambulance" style="color:var(--red);"></i></div>
+          <div style="flex:1;"><div class="vtc-name">Ambulância</div><div class="vtc-desc">Transporte clínico de pacientes</div><div class="vtc-eta"><span class="pulse"></span> Amb.01 · ~3 min</div></div>
+          <div class="vtc-km" id="km-amb">—</div>
+        </div>
+        <div class="vtc" onclick="selVtype(this,'apoio')">
+          <div class="vtc-img"><i class="ti ti-car-suv" style="color:var(--blue);"></i></div>
+          <div style="flex:1;"><div class="vtc-name">Carro de apoio</div><div class="vtc-desc">Funcionários, materiais e documentos</div><div class="vtc-eta"><span class="pulse"></span> Apoio02 · ~5 min</div></div>
+          <div class="vtc-km" id="km-apoio">—</div>
+        </div>
+      </div>
+      <div id="form-amb" class="form-block">
+        <div class="form-title" style="color:var(--red);">Dados do paciente</div>
+        <div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" placeholder="Nome completo"/></div>
+        <div class="f-row">
+          <div class="f-grp"><label class="f-lbl">Prontuário</label><input class="f-in" placeholder="Nº"/></div>
+          <div class="f-grp"><label class="f-lbl">Estado</label><select class="f-sel"><option>Estável</option><option>Grave</option><option>Crítico</option></select></div>
+        </div>
+        <div class="f-grp"><label class="f-lbl">Suporte</label><select class="f-sel"><option>Nenhum</option><option>Oxigênio</option><option>Maca + soro</option><option>UTI móvel</option></select></div>
+      </div>
+      <div id="form-apoio" class="form-block" style="display:none;">
+        <div class="form-title" style="color:var(--blue);">Dados do transporte</div>
+        <div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel"><option>Funcionário</option><option>Medicamento</option><option>Material</option><option>Documento</option></select></div>
+        <div class="f-grp"><label class="f-lbl">Descrição</label><input class="f-in" placeholder="O que será transportado?"/></div>
+      </div>
+      <div style="padding:0 16px 14px;flex-shrink:0;">
+        <button class="btn-main" onclick="confirmRide()">Confirmar solicitação</button>
+      </div>
+    </div>
+
+    <!-- CONFIRM -->
+    <div class="screen" id="scr-confirm">
+      <div class="confirm-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div><div style="font-size:16px;font-weight:800;" id="conf-status">Procurando motorista…</div><div style="font-size:12px;color:var(--gray4);margin-top:2px;" id="conf-sub">Alocando veículo disponível</div></div>
+          <div style="width:34px;height:34px;border:3px solid var(--green);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;" id="conf-spinner"></div>
+        </div>
+        <div class="trip-stats">
+          <div class="ts-block"><div class="ts-val" id="cf-km">—</div><div class="ts-lbl">Distância</div></div>
+          <div class="ts-block"><div class="ts-val" id="cf-eta">—</div><div class="ts-lbl">Tempo</div></div>
+          <div class="ts-block"><div class="ts-val" id="cf-custo">—</div><div class="ts-lbl">Custo</div></div>
+        </div>
+        <div class="driver-card" id="drv-preview" style="opacity:0;transition:opacity .5s;">
+          <div class="dav">JR</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--gray4);">Amb.01 · HPA-1234</div><div style="font-size:11px;color:var(--amber);margin-top:2px;">★★★★★ 4.9</div></div>
+          <div style="text-align:right;font-size:11px;"><div style="color:var(--gray4);">Hodômetro</div><div style="font-weight:700;margin-top:1px;" id="cf-hod">—</div></div>
+        </div>
+        <button class="btn-out" onclick="cancelRide()">Cancelar solicitação</button>
+      </div>
+    </div>
+
+    <!-- RIDING -->
+    <div class="screen" id="scr-riding">
+      <div class="riding-bottom">
+        <div class="prog"><div class="prog-fill"></div></div>
+        <div class="rd-drv">
+          <div class="rd-av">JR</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--gray4);">Amb.01 · HPA-1234 · <span style="color:var(--green);">Em rota</span></div></div>
+          <button class="icon-btn" style="background:#1a1a1a;" onclick="notify('Mensagem enviada!')"><i class="ti ti-message"></i></button>
+        </div>
+        <div class="rd-actions">
+          <button class="rd-btn" style="background:#1a1a1a;color:#fff;" onclick="notify('Ligando para João…')"><i class="ti ti-phone"></i> Ligar</button>
+          <button class="rd-btn" style="background:var(--green);color:#000;" onclick="finishRide()">Concluir corrida</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVER -->
+    <div class="screen" id="scr-driver">
+      <div class="drv-bar">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.06em;">Status</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <button class="tog on" id="tog-btn" onclick="toggleOnline()"><div class="tog-knob"></div></button>
+            <span style="font-size:14px;font-weight:700;" id="online-lbl">Online</span>
+          </div>
+        </div>
+        <div style="text-align:right;"><div style="font-size:11px;color:var(--gray4);">João Rodrigues</div><div style="font-size:12px;font-weight:700;margin-top:1px;">Amb.01 · HPA-1234</div><div style="font-size:11px;color:var(--green);">★ 4.9</div></div>
+      </div>
+      <div class="earn-box">
+        <div class="eb"><div class="eb-val" id="earn-trips">18</div><div class="eb-lbl">Corridas</div></div>
+        <div class="eb"><div class="eb-val">412 km</div><div class="eb-lbl">Rodados</div></div>
+        <div class="eb"><div class="eb-val">~8h</div><div class="eb-lbl">Serviço</div></div>
+      </div>
+      <div class="req-card" id="req-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="badge b-red"><i class="ti ti-ambulance"></i> URGENTE</span>
+          <span style="font-size:11px;color:var(--gray4);">0,6 km de você</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-bottom:4px;"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>Pronto-socorro</div>
+          <div style="width:2px;height:8px;background:#333;margin-left:2.5px;"></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-top:4px;"><div style="width:7px;height:7px;border-radius:50%;background:#fff;flex-shrink:0;"></div>UTI Adulto — Bloco C</div>
+        </div>
+        <div class="req-timer"><div class="req-timer-fill"></div></div>
+        <div class="req-actions">
+          <button class="btn-out" style="margin:0;flex:1;padding:10px;" onclick="rejectReq()">Recusar</button>
+          <button class="btn-main" style="margin:0;flex:2;padding:10px;font-size:13px;" onclick="acceptReq()">Aceitar corrida</button>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:0 16px 10px;">
+        <div class="section-label" style="padding:0;margin-bottom:8px;">Hoje</div>
+        <div class="th-it"><div class="th-top"><span class="th-date">há 42 min</span><span class="th-st ok">Concluída</span></div><div class="th-route">Maternidade → Exames B</div><div class="th-sub">Amb.01 · 1,8 km</div></div>
+        <div class="th-it"><div class="th-top"><span class="th-date">há 1h 20min</span><span class="th-st ok">Concluída</span></div><div class="th-route">Ambulatório → UTI Neo</div><div class="th-sub">Apoio02 · 0,9 km</div></div>
+      </div>
+      <nav class="bottom-nav">
+        <button class="bn" onclick="goto('scr-home');setNav(this)"><i class="ti ti-home"></i><span>Início</span></button>
+        <button class="bn" onclick="goto('scr-activity');setNav(this)"><i class="ti ti-clock"></i><span>Atividade</span></button>
+        <button class="bn active" onclick="setNav(this)"><i class="ti ti-steering-wheel"></i><span>Motorista</span></button>
+        <button class="bn" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
+        <button class="bn" onclick="goto('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="screen" id="scr-activity">
+      <div class="act-hd">
+        <button class="back-btn" onclick="goto('scr-home')" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
+        <div style="font-size:18px;font-weight:800;">Atividade</div>
+        <div style="font-size:12px;color:var(--gray4);margin-top:2px;">18 corridas este mês</div>
+      </div>
+      <div class="trip-hist">
+        <div class="th-it"><div class="th-top"><span class="th-date">Hoje, 09:14</span><span class="th-st ok">Concluída</span></div><div class="th-route">Maternidade → Exames B</div><div class="th-sub">Amb.01 · João R. · 1,8 km</div><div class="th-bot"><span style="color:var(--gray4);">Hod: 85.000 → 85.002 km</span><span style="color:var(--green);font-weight:700;">R$ 1,44</span></div></div>
+        <div class="th-it"><div class="th-top"><span class="th-date">Hoje, 08:02</span><span class="th-st ok">Concluída</span></div><div class="th-route">PS → UTI Adulto</div><div class="th-sub">Apoio02 · Marcos S. · 0,6 km</div><div class="th-bot"><span style="color:var(--gray4);">Hod: 61.700 → 61.701 km</span><span style="color:var(--green);font-weight:700;">R$ 0,48</span></div></div>
+        <div class="th-it"><div class="th-top"><span class="th-date">Ontem, 17:42</span><span class="th-st no">Cancelada</span></div><div class="th-route">UTI Neo → Exames</div><div class="th-sub">Apoio02 · Marcos S.</div><div class="th-bot"><span style="color:var(--gray4);">Cancelado</span><span style="color:var(--red);">—</span></div></div>
+        <div class="th-it"><div class="th-top"><span class="th-date">Ontem, 14:15</span><span class="th-st ok">Concluída</span></div><div class="th-route">Ambulatório → Portaria</div><div class="th-sub">Amb.01 · João R. · 2,1 km</div><div class="th-bot"><span style="color:var(--gray4);">Hod: 84.997 → 85.000 km</span><span style="color:var(--green);font-weight:700;">R$ 1,68</span></div></div>
+      </div>
+      <nav class="bottom-nav">
+        <button class="bn" onclick="goto('scr-home');setNav(this)"><i class="ti ti-home"></i><span>Início</span></button>
+        <button class="bn active" onclick="setNav(this)"><i class="ti ti-clock"></i><span>Atividade</span></button>
+        <button class="bn" onclick="goto('scr-driver');setNav(this)"><i class="ti ti-steering-wheel"></i><span>Motorista</span></button>
+        <button class="bn" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
+        <button class="bn" onclick="goto('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
+    </div>
+
+    <!-- MENU -->
+    <div class="screen" id="scr-menu">
+      <div class="menu-hd">
+        <button class="back-btn" onclick="goto('scr-home')" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
+        <div class="m-av">AD</div>
+        <div style="font-size:17px;font-weight:800;">Administrador</div>
+        <div style="font-size:12px;color:var(--gray4);margin-top:1px;">Hospital da Mulher do Pará</div>
+      </div>
+      <div class="menu-items">
+        <div class="mi" onclick="openSheet('sh-empresa')"><div class="mi-ic"><i class="ti ti-building-hospital"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">Empresa</div><div style="font-size:11px;color:var(--gray4);">Dados do HMPá</div></div><i class="ti ti-chevron-right" style="color:var(--gray4);"></i></div>
+        <div class="mi" onclick="openSheet('sh-motoristas')"><div class="mi-ic"><i class="ti ti-steering-wheel"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">Motoristas</div><div style="font-size:11px;color:var(--gray4);">Cadastro e gestão</div></div><i class="ti ti-chevron-right" style="color:var(--gray4);"></i></div>
+        <div class="mi" onclick="openSheet('sh-veiculos')"><div class="mi-ic"><i class="ti ti-car"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">Veículos</div><div style="font-size:11px;color:var(--gray4);">Frota e hodômetros</div></div><i class="ti ti-chevron-right" style="color:var(--gray4);"></i></div>
+        <div class="mi" onclick="openSheet('sh-destinos')"><div class="mi-ic"><i class="ti ti-map-pin"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">Destinos</div><div style="font-size:11px;color:var(--gray4);">Pontos cadastrados</div></div><i class="ti ti-chevron-right" style="color:var(--gray4);"></i></div>
+        <div class="mi" onclick="openSheet('sh-relatorio')"><div class="mi-ic"><i class="ti ti-chart-bar"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:600;">Relatório financeiro</div><div style="font-size:11px;color:var(--gray4);">Custos e km do mês</div></div><i class="ti ti-chevron-right" style="color:var(--gray4);"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SHEETS -->
+<div class="sheet-bg" id="sh-notif" onclick="closeBg(event,'sh-notif')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Notificações</h3><button class="sh-close" onclick="closeSheet('sh-notif')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div style="background:#1a1a1a;border-radius:10px;overflow:hidden;"><div style="padding:12px;border-bottom:1px solid #2a2a2a;display:flex;gap:10px;"><span style="font-size:18px;">🚑</span><div><div style="font-size:13px;font-weight:700;">Corrida concluída</div><div style="font-size:11px;color:var(--gray4);margin-top:1px;">Maternidade → Exames B · há 42 min</div></div></div><div style="padding:12px;border-bottom:1px solid #2a2a2a;display:flex;gap:10px;"><span style="font-size:18px;">⚠️</span><div><div style="font-size:13px;font-weight:700;">Nova solicitação urgente</div><div style="font-size:11px;color:var(--gray4);margin-top:1px;">PS → UTI Adulto · há 5 min</div></div></div><div style="padding:12px;display:flex;gap:10px;"><span style="font-size:18px;">⛽</span><div><div style="font-size:13px;font-weight:700;">Amb.01 precisa de abastecimento</div><div style="font-size:11px;color:var(--gray4);margin-top:1px;">Nível baixo</div></div></div></div></div></div></div>
+
+<div class="sheet-bg" id="sh-relatorio" onclick="closeBg(event,'sh-relatorio')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Relatório financeiro</h3><button class="sh-close" onclick="closeSheet('sh-relatorio')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;"><div style="background:#1a1a1a;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:17px;font-weight:800;color:var(--green);">237</div><div style="font-size:10px;color:var(--gray4);margin-top:1px;">Corridas</div></div><div style="background:#1a1a1a;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:17px;font-weight:800;color:var(--green);">1.842</div><div style="font-size:10px;color:var(--gray4);margin-top:1px;">Km rodados</div></div><div style="background:#1a1a1a;border-radius:10px;padding:10px;text-align:center;"><div style="font-size:17px;font-weight:800;color:var(--amber);">R$4.280</div><div style="font-size:10px;color:var(--gray4);margin-top:1px;">Custo total</div></div></div><div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Combustível</span><span style="font-weight:700;color:var(--green);">R$ 2.140</span></div><div style="height:5px;background:#1a1a1a;border-radius:3px;"><div style="height:100%;width:50%;background:var(--green);border-radius:3px;"></div></div></div><div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Manutenção</span><span style="font-weight:700;color:var(--amber);">R$ 856</span></div><div style="height:5px;background:#1a1a1a;border-radius:3px;"><div style="height:100%;width:20%;background:var(--amber);border-radius:3px;"></div></div></div><div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Horas extras</span><span style="font-weight:700;color:var(--blue);">R$ 642</span></div><div style="height:5px;background:#1a1a1a;border-radius:3px;"><div style="height:100%;width:15%;background:var(--blue);border-radius:3px;"></div></div></div><div style="background:#1a1a1a;border-radius:10px;overflow:hidden;margin-bottom:12px;"><div style="display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid #2a2a2a;font-size:12px;"><span>🚑 Ambulância 01</span><span style="font-weight:700;">R$ 1.144</span></div><div style="display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid #2a2a2a;font-size:12px;"><span>🚗 Apoio 01</span><span style="font-weight:700;">R$ 758</span></div><div style="display:flex;justify-content:space-between;padding:10px 13px;font-size:12px;"><span>🚗 Apoio 02</span><span style="font-weight:700;">R$ 812</span></div></div><button class="btn-main" onclick="notify('Relatório exportado!')">Exportar PDF</button></div></div></div>
+
+<div class="sheet-bg" id="sh-empresa" onclick="closeBg(event,'sh-empresa')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Empresa</h3><button class="sh-close" onclick="closeSheet('sh-empresa')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" value="Hospital da Mulher do Pará — HMPá"/></div><div class="f-grp"><label class="f-lbl">CNPJ</label><input class="f-in" value="04.913.025/0001-44"/></div><div class="f-grp"><label class="f-lbl">Responsável</label><input class="f-in" value="Sra. Fernanda Tavares"/></div><div class="f-grp"><label class="f-lbl">Endereço de origem</label><input class="f-in" value="Av. Augusto Montenegro, 4420 — Belém/PA"/></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Custo/km</label><input class="f-in" value="R$ 0,80"/></div><div class="f-grp"><label class="f-lbl">Preço litro</label><input class="f-in" value="R$ 6,89"/></div></div><button class="btn-main" onclick="closeSheet('sh-empresa');notify('Dados salvos!')">Salvar</button></div></div></div>
+
+<div class="sheet-bg" id="sh-motoristas" onclick="closeBg(event,'sh-motoristas')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Motoristas</h3><button class="sh-close" onclick="closeSheet('sh-motoristas')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div style="background:#1a1a1a;border-radius:10px;margin-bottom:12px;overflow:hidden;"><div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #2a2a2a;"><div style="width:34px;height:34px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">JR</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--gray4);">CNH-D · Amb.01 · Matutino</div></div><span class="badge b-green">Ativo</span></div><div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #2a2a2a;"><div style="width:34px;height:34px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">MS</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Marcos Santana</div><div style="font-size:11px;color:var(--gray4);">CNH-D · Apoio02 · Vespertino</div></div><span class="badge b-green">Ativo</span></div><div style="display:flex;align-items:center;gap:10px;padding:12px;"><div style="width:34px;height:34px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;color:var(--red);">TF</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Thiago Ferreira</div><div style="font-size:11px;color:var(--gray4);">CNH-B · Apoio01 · Noturno</div></div><span class="badge b-amber">Afastado</span></div></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" placeholder="Nome completo"/></div><div class="f-grp"><label class="f-lbl">CNH</label><input class="f-in" placeholder="Número"/></div></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel"><option>B</option><option>D</option><option>E</option></select></div><div class="f-grp"><label class="f-lbl">Turno</label><select class="f-sel"><option>Matutino</option><option>Vespertino</option><option>Noturno</option></select></div></div><button class="btn-main" onclick="closeSheet('sh-motoristas');notify('Motorista cadastrado!')">Cadastrar</button></div></div></div>
+
+<div class="sheet-bg" id="sh-veiculos" onclick="closeBg(event,'sh-veiculos')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Veículos</h3><button class="sh-close" onclick="closeSheet('sh-veiculos')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div style="background:#1a1a1a;border-radius:10px;margin-bottom:12px;overflow:hidden;"><div style="padding:12px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">🚑</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Amb.01 — HPA-1234</div><div style="font-size:11px;color:var(--gray4);">Renault Master 2021 · 85.000 km</div></div><span class="badge b-amber">Em corrida</span></div><div style="padding:12px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">🚗</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Apoio01 — HPA-5678</div><div style="font-size:11px;color:var(--gray4);">Toyota Corolla 2020 · 42.300 km</div></div><span class="badge b-green">Livre</span></div><div style="padding:12px;display:flex;align-items:center;gap:10px;"><span style="font-size:22px;">🚗</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Apoio02 — HPA-9012</div><div style="font-size:11px;color:var(--gray4);">Chevrolet Spin 2022 · 61.700 km</div></div><span class="badge b-amber">Em corrida</span></div></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Identificação</label><input class="f-in" placeholder="Ex: Apoio 03"/></div><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel"><option>Ambulância</option><option>Carro de apoio</option></select></div></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Placa</label><input class="f-in" placeholder="HPA-0000"/></div><div class="f-grp"><label class="f-lbl">Hodômetro (km)</label><input class="f-in" type="number" placeholder="0"/></div></div><div class="f-grp"><label class="f-lbl">Modelo</label><input class="f-in" placeholder="Marca e modelo"/></div><button class="btn-main" onclick="closeSheet('sh-veiculos');notify('Veículo cadastrado!')">Cadastrar</button></div></div></div>
+
+<div class="sheet-bg" id="sh-destinos" onclick="closeBg(event,'sh-destinos')"><div class="sheet"><div class="sh-handle"></div><div class="sh-hd"><h3>Destinos</h3><button class="sh-close" onclick="closeSheet('sh-destinos')"><i class="ti ti-x"></i></button></div><div class="sh-body"><div style="background:#1a1a1a;border-radius:10px;margin-bottom:12px;overflow:hidden;"><div style="padding:10px 13px;border-bottom:1px solid #2a2a2a;font-size:12px;display:flex;justify-content:space-between;"><span>UTI Adulto — Bloco C</span><span style="color:var(--gray4);">0,3 km</span></div><div style="padding:10px 13px;border-bottom:1px solid #2a2a2a;font-size:12px;display:flex;justify-content:space-between;"><span>Exames — Bloco B</span><span style="color:var(--gray4);">0,5 km</span></div><div style="padding:10px 13px;border-bottom:1px solid #2a2a2a;font-size:12px;display:flex;justify-content:space-between;"><span>Centro Cirúrgico</span><span style="color:var(--gray4);">0,4 km</span></div><div style="padding:10px 13px;font-size:12px;display:flex;justify-content:space-between;"><span>UEPA — Unidade Externa</span><span style="color:var(--gray4);">4,2 km</span></div></div><div class="f-grp"><label class="f-lbl">Nome do local</label><input class="f-in" placeholder="Ex: UTI Neonatal"/></div><div class="f-row"><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel"><option>Interno</option><option>Externo</option></select></div><div class="f-grp"><label class="f-lbl">Distância (km)</label><input class="f-in" type="number" placeholder="0.0"/></div></div><button class="btn-main" onclick="closeSheet('sh-destinos');notify('Destino cadastrado!')">Cadastrar</button></div></div></div>
+
+<div class="notif" id="notif"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+const ORIGIN = [-1.3551, -48.4243];
+const FREQ_DESTS = [
+  {name:'UTI Adulto — Bloco C', sub:'Interno · 2º andar', dist:'0,3 km', lat:-1.3554, lng:-48.4248},
+  {name:'Exames — Bloco B', sub:'Interno · Térreo', dist:'0,5 km', lat:-1.3558, lng:-48.4252},
+  {name:'Centro Cirúrgico', sub:'Interno · 3º andar', dist:'0,4 km', lat:-1.3549, lng:-48.4239},
+  {name:'Maternidade', sub:'Interno · 1º andar', dist:'0,2 km', lat:-1.3553, lng:-48.4241},
+  {name:'UTI Neonatal', sub:'Interno · 2º andar', dist:'0,3 km', lat:-1.3556, lng:-48.4245},
+  {name:'Farmácia', sub:'Interno · Térreo', dist:'0,1 km', lat:-1.3552, lng:-48.4240},
+  {name:'Portaria Principal', sub:'Interno · Térreo', dist:'0,1 km', lat:-1.3550, lng:-48.4238},
+  {name:'UEPA — Unidade Externa', sub:'Externo · Trav. Perebebuí', dist:'4,2 km', lat:-1.3640, lng:-48.4510},
+  {name:'Hospital Beneficente', sub:'Externo · Av. Nazaré', dist:'8,7 km', lat:-1.4502, lng:-48.4768},
+  {name:'UPA Bengui', sub:'Externo · Bengui', dist:'6,1 km', lat:-1.3221, lng:-48.4910},
+];
+
+let map, routeLayer = null, destMarker = null;
+let selDest = null, selVtypeVal = 'amb', stopCount = 0, searchTimeout = null;
+
+// Init Leaflet map
+map = L.map('map', {zoomControl:false, attributionControl:false}).setView(ORIGIN, 16);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+
+// Hospital marker
+const hospitalIcon = L.divIcon({
+  html:'<div style="width:18px;height:18px;background:#06C167;border-radius:50%;border:3px solid #000;box-shadow:0 2px 6px rgba(0,0,0,.5);"></div>',
+  iconSize:[18,18], iconAnchor:[9,9], className:''
+});
+L.marker(ORIGIN, {icon:hospitalIcon}).addTo(map).bindPopup('<b>Hospital da Mulher do Pará</b>');
+
+// Fake vehicle markers
+const carIcon = L.divIcon({html:'<div style="font-size:20px;line-height:1;">🚑</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
+const carIcon2 = L.divIcon({html:'<div style="font-size:20px;line-height:1;">🚗</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
+L.marker([-1.3535,-48.4210],{icon:carIcon}).addTo(map);
+L.marker([-1.3568,-48.4265],{icon:carIcon2}).addTo(map);
+L.marker([-1.3560,-48.4198],{icon:carIcon2}).addTo(map);
+
+renderRecent();
+renderAcList();
+
+function renderRecent(){
+  document.getElementById('recent-list').innerHTML = FREQ_DESTS.slice(0,6).map(d=>`
+    <div class="ri" onclick="pickFreqDest('${d.name}')">
+      <div class="ri-ic"><i class="ti ti-map-pin"></i></div>
+      <div style="flex:1;"><div class="ri-name">${d.name}</div><div class="ri-sub">${d.sub}</div></div>
+      <span style="font-size:11px;color:var(--gray4);">${d.dist}</span>
+    </div>`).join('');
+}
+
+function renderAcList(filter=''){
+  const list = filter ? FREQ_DESTS.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())) : FREQ_DESTS;
+  document.getElementById('ac-list').innerHTML = list.map(d=>`
+    <div class="ac-item" onclick="pickFreqDest('${d.name}')">
+      <div class="ac-ic"><i class="ti ti-map-pin"></i></div>
+      <div><div class="ac-name">${d.name}</div><div class="ac-sub">${d.sub} · ${d.dist}</div></div>
+    </div>`).join('');
+}
+
+function onDestInput(val){
+  clearTimeout(searchTimeout);
+  if(!val){ renderAcList(); document.getElementById('list-label').textContent='Destinos frequentes'; return; }
+  // first filter local
+  renderAcList(val);
+  document.getElementById('list-label').textContent='Resultados';
+  // then search Nominatim after 600ms
+  searchTimeout = setTimeout(()=>searchNominatim(val), 600);
+}
+
+async function searchNominatim(q){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+', Belém, Pará, Brasil')}&format=json&limit=5&addressdetails=1`, {headers:{'Accept-Language':'pt-BR'}});
+    const data = await r.json();
+    if(!data.length) return;
+    const el = document.getElementById('ac-list');
+    const extra = data.map(p=>`
+      <div class="search-result" onclick="pickSearchResult(${p.lat},${p.lon},'${p.display_name.replace(/'/g,"\\'")}')">
+        <div class="sr-ic"><i class="ti ti-search"></i></div>
+        <div><div class="sr-name">${p.display_name.split(',')[0]}</div><div class="sr-addr">${p.display_name.split(',').slice(1,3).join(',')}</div></div>
+      </div>`).join('');
+    el.innerHTML += '<div style="font-size:10px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.06em;padding:10px 0 6px;">Resultados do mapa</div>' + extra;
+  }catch(e){}
+}
+
+function pickSearchResult(lat,lon,name){
+  selDest = {name:name.split(',')[0], lat:parseFloat(lat), lng:parseFloat(lon)};
+  document.getElementById('dest-input').value = selDest.name;
+  drawRoute(selDest.lat, selDest.lng, selDest.name);
+  document.getElementById('vtype-sub').textContent = 'HMPá → '+selDest.name;
+  goto('scr-vtype');
+}
+
+function pickFreqDest(name){
+  const d = FREQ_DESTS.find(x=>x.name===name);
+  if(!d) return;
+  selDest = d;
+  document.getElementById('dest-input').value = name;
+  document.getElementById('vtype-sub').textContent = 'HMPá → '+name;
+  drawRoute(d.lat, d.lng, name);
+  goto('scr-vtype');
+}
+
+async function drawRoute(lat, lng, name){
+  // Clear previous
+  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+  if(destMarker){map.removeLayer(destMarker);destMarker=null;}
+
+  // Dest marker
+  const dIcon = L.divIcon({
+    html:'<div style="width:14px;height:14px;background:#fff;border-radius:50%;border:3px solid #000;box-shadow:0 2px 6px rgba(0,0,0,.5);"></div>',
+    iconSize:[14,14],iconAnchor:[7,7],className:''
+  });
+  destMarker = L.marker([lat,lng],{icon:dIcon}).addTo(map).bindPopup(`<b>${name}</b>`);
+
+  // OSRM routing (free, no key)
+  try{
+    const url = `https://router.project-osrm.org/route/v1/driving/${ORIGIN[1]},${ORIGIN[0]};${lng},${lat}?overview=full&geometries=geojson`;
+    const r = await fetch(url);
+    const data = await r.json();
+    if(data.code==='Ok'){
+      const route = data.routes[0];
+      const distKm = (route.distance/1000).toFixed(1);
+      const durMin = Math.round(route.duration/60);
+      routeLayer = L.geoJSON(route.geometry,{style:{color:'#06C167',weight:5,opacity:.9}}).addTo(map);
+      map.fitBounds(routeLayer.getBounds(),{paddingTopLeft:[20,80],paddingBottomRight:[20,300]});
+      // Update UI
+      document.getElementById('km-amb').textContent = distKm+' km';
+      document.getElementById('km-apoio').textContent = distKm+' km';
+      document.getElementById('cf-km').textContent = distKm+' km';
+      document.getElementById('cf-eta').textContent = durMin+' min';
+      document.getElementById('cf-custo').textContent = 'R$'+(distKm*0.80).toFixed(2);
+      document.getElementById('cf-hod').textContent = (85000+parseFloat(distKm)).toFixed(1)+' km';
+      document.getElementById('eta-pill').textContent = '🚑 Chegando em ~'+durMin+' min';
+    }
+  }catch(e){
+    // fallback straight line
+    document.getElementById('km-amb').textContent = selDest.dist||'—';
+  }
+}
+
+function addStop(){
+  if(stopCount>=2){notify('Máximo de 2 paradas.');return;}
+  stopCount++;
+  const wrap=document.getElementById('extra-stops');
+  const d=document.createElement('div');
+  d.innerHTML=`<div style="margin-bottom:6px;"><div class="rp"><div class="rp-dot" style="width:10px;height:10px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div><input class="rp-in" placeholder="Parada ${stopCount}…"/></div></div><div class="rp-line"></div>`;
+  wrap.appendChild(d);
+}
+
+function selSvc(el){document.querySelectorAll('.svc').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');}
+function selVtype(el,t){
+  document.querySelectorAll('.vtc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');selVtypeVal=t;
+  document.getElementById('form-amb').style.display=t==='amb'?'block':'none';
+  document.getElementById('form-apoio').style.display=t==='apoio'?'block':'none';
+}
+
+function confirmRide(){
+  goto('scr-confirm');
+  setTimeout(()=>{
+    document.getElementById('conf-status').textContent='Motorista encontrado!';
+    document.getElementById('conf-sub').textContent='João Rodrigues está a caminho';
+    document.getElementById('conf-spinner').style.display='none';
+    document.getElementById('drv-preview').style.opacity='1';
+    setTimeout(()=>{goto('scr-riding');document.getElementById('eta-pill').style.display='block';},2500);
+  },3000);
+}
+
+function cancelRide(){
+  goto('scr-home');
+  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+  if(destMarker){map.removeLayer(destMarker);destMarker=null;}
+  map.setView(ORIGIN,16);
+  notify('Solicitação cancelada.');
+}
+
+function finishRide(){
+  document.getElementById('eta-pill').style.display='none';
+  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+  if(destMarker){map.removeLayer(destMarker);destMarker=null;}
+  map.setView(ORIGIN,16);
+  goto('scr-home');notify('Corrida concluída! ✓');
+  const t=document.getElementById('earn-trips');t.textContent=parseInt(t.textContent)+1;
+}
+
+function toggleOnline(){
+  const on=document.getElementById('tog-btn').classList.toggle('on');
+  document.getElementById('online-lbl').textContent=on?'Online':'Offline';
+  notify(on?'Você está online.':'Você está offline.');
+}
+function acceptReq(){document.getElementById('req-card').innerHTML='<div style="text-align:center;padding:6px 0;"><div style="font-size:14px;font-weight:800;color:var(--green);">Corrida aceita!</div><div style="font-size:11px;color:#666;margin-top:2px;">A caminho do solicitante</div></div>';notify('Corrida aceita!');}
+function rejectReq(){document.getElementById('req-card').style.display='none';notify('Corrida recusada.');}
+function goto(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');setTimeout(()=>map.invalidateSize(),100);}
+function setNav(btn){document.querySelectorAll('.bn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function openSheet(id){document.getElementById(id).classList.add('open');}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+function closeBg(e,id){if(e.target===e.currentTarget)closeSheet(id);}
+function notify(msg){const n=document.getElementById('notif');n.textContent=msg;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),2600);}
+</script>
+</body>
+</html>
