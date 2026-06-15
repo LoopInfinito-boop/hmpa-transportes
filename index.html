@@ -397,7 +397,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
     <div class="route-inputs">
       <div class="rp-row">
         <div class="rp-dot" style="background:var(--green);"></div>
-        <input class="rp-input" value="Hospital da Mulher do Pará" readonly style="color:var(--muted);"/>
+        <input class="rp-input" value="Hospital da Mulher do Pará — Av. Gentil Bittencourt, 2175" readonly style="color:var(--muted);"/>
       </div>
       <div class="rp-vline" style="margin-left:5px;"></div>
       <div id="extra-stops"></div>
@@ -670,7 +670,7 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
     <div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" value="Hospital da Mulher do Pará — HMPá"/></div>
     <div class="f-grp"><label class="f-lbl">CNPJ</label><input class="f-in" value="04.913.025/0001-44"/></div>
     <div class="f-grp"><label class="f-lbl">Responsável pelo transporte</label><input class="f-in" value="Sra. Fernanda Tavares"/></div>
-    <div class="f-grp"><label class="f-lbl">Endereço de origem dos veículos</label><input class="f-in" value="Av. Augusto Montenegro, 4420 — Belém/PA"/></div>
+    <div class="f-grp"><label class="f-lbl">Endereço de origem dos veículos</label><input class="f-in" value="Av. Gentil Bittencourt, 2175 — Belém/PA"/></div>
     <div class="f-row"><div class="f-grp"><label class="f-lbl">Custo/km (R$)</label><input class="f-in" value="0,80"/></div><div class="f-grp"><label class="f-lbl">Preço litro combustível</label><input class="f-in" value="R$ 6,89"/></div></div>
     <button class="btn" onclick="closeSheet('sh-empresa');toast('Dados da empresa salvos!')"><i class="ti ti-device-floppy"></i> Salvar</button>
   </div></div>
@@ -760,18 +760,18 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 // ══════════════════════════════════════════════
 const DB = {
   destinations: [
-    {id:1,name:'UTI Adulto — Bloco C',cat:'Interno',info:'2º andar',dist:0.3,lat:-1.3554,lng:-48.4248},
-    {id:2,name:'Exames — Bloco B',cat:'Interno',info:'Térreo',dist:0.5,lat:-1.3558,lng:-48.4252},
-    {id:3,name:'Centro Cirúrgico',cat:'Interno',info:'3º andar',dist:0.4,lat:-1.3549,lng:-48.4239},
-    {id:4,name:'Maternidade',cat:'Interno',info:'1º andar',dist:0.2,lat:-1.3553,lng:-48.4241},
-    {id:5,name:'UTI Neonatal',cat:'Interno',info:'2º andar',dist:0.3,lat:-1.3556,lng:-48.4245},
-    {id:6,name:'Farmácia',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.3552,lng:-48.4240},
-    {id:7,name:'Portaria Principal',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.3550,lng:-48.4238},
-    {id:8,name:'Pronto-socorro',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.3551,lng:-48.4244},
-    {id:9,name:'Almoxarifado',cat:'Interno',info:'Subsolo',dist:0.2,lat:-1.3555,lng:-48.4243},
-    {id:10,name:'UEPA — Unidade Externa',cat:'Externo',info:'Trav. Perebebuí, 2623',dist:4.2,lat:-1.3640,lng:-48.4510},
+    {id:1,name:'UTI Adulto — Bloco C',cat:'Interno',info:'2º andar',dist:0.3,lat:-1.4544,lng:-48.4727},
+    {id:2,name:'Exames — Bloco B',cat:'Interno',info:'Térreo',dist:0.5,lat:-1.4548,lng:-48.4731},
+    {id:3,name:'Centro Cirúrgico',cat:'Interno',info:'3º andar',dist:0.4,lat:-1.4543,lng:-48.4722},
+    {id:4,name:'Maternidade',cat:'Interno',info:'1º andar',dist:0.2,lat:-1.4547,lng:-48.4724},
+    {id:5,name:'UTI Neonatal',cat:'Interno',info:'2º andar',dist:0.3,lat:-1.4550,lng:-48.4728},
+    {id:6,name:'Farmácia',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.4542,lng:-48.4723},
+    {id:7,name:'Portaria Principal',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.4541,lng:-48.4721},
+    {id:8,name:'Pronto-socorro',cat:'Interno',info:'Térreo',dist:0.1,lat:-1.4546,lng:-48.4730},
+    {id:9,name:'Almoxarifado',cat:'Interno',info:'Subsolo',dist:0.2,lat:-1.4549,lng:-48.4729},
+    {id:10,name:'UEPA — Unidade Externa',cat:'Externo',info:'Trav. Perebebuí, 2623',dist:4.2,lat:-1.4400,lng:-48.4650},
     {id:11,name:'Hospital Beneficente',cat:'Externo',info:'Av. Nazaré, 864',dist:8.7,lat:-1.4502,lng:-48.4768},
-    {id:12,name:'UPA Bengui',cat:'Externo',info:'Bengui, Belém',dist:6.1,lat:-1.3221,lng:-48.4910},
+    {id:12,name:'UPA Bengui',cat:'Externo',info:'Bengui, Belém',dist:6.1,lat:-1.4050,lng:-48.4800},
   ],
   drivers: [
     {id:1,name:'João Rodrigues',cnh:'D',vehicle:'Amb.01',shift:'Matutino',status:'online',rating:4.9},
@@ -808,7 +808,7 @@ setTimeout(()=>{
 // ══════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════
-const ORIGIN=[-1.3551,-48.4243];
+const ORIGIN=[-1.454589,-48.472931];
 let role='pass', user={}, svcVal='amb', vtypeVal='amb';
 let selDest=null, routeLayer=null, destMk=null, userMk=null, userCircle=null;
 let stops=0, srTimer=null, tripData={}, prevScr='scr-home', rating=5, userPos=null;
@@ -824,12 +824,12 @@ const hIcon=L.divIcon({
   html:'<div style="width:18px;height:18px;background:#06C167;border-radius:50%;border:3px solid #000;box-shadow:0 2px 10px rgba(0,0,0,.7);"></div>',
   iconSize:[18,18],iconAnchor:[9,9],className:''
 });
-L.marker(ORIGIN,{icon:hIcon}).addTo(map).bindPopup('<b style="font-size:13px;">Hospital da Mulher do Pará</b><br/><span style="font-size:11px;color:#888;">Origem padrão dos veículos</span>');
+L.marker(ORIGIN,{icon:hIcon}).addTo(map).bindPopup('<b style="font-size:13px;">Hospital da Mulher do Pará</b><br/><span style="font-size:11px;color:#888;">Av. Gentil Bittencourt, 2175 — São Brás</span>');
 
 // Vehicle markers
 const mkAmb=L.divIcon({html:'<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">🚑</div>',iconSize:[26,26],iconAnchor:[13,13],className:''});
 const mkCar=L.divIcon({html:'<div style="font-size:22px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">🚗</div>',iconSize:[26,26],iconAnchor:[13,13],className:''});
-[[-1.3535,-48.4210],[-1.3568,-48.4265],[-1.3560,-48.4198]].forEach((p,i)=>L.marker(p,{icon:i===0?mkAmb:mkCar}).addTo(map));
+[[-1.4535,-48.4720],[-1.4560,-48.4745],[-1.4548,-48.4708]].forEach((p,i)=>L.marker(p,{icon:i===0?mkAmb:mkCar}).addTo(map));
 
 // GPS user marker
 const gpsIcon=L.divIcon({html:`
