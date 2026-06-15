@@ -10,54 +10,53 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
-  --green:#06C167;--gd:#048848;--red:#D1293D;--amber:#F5A623;--blue:#276EF1;
+  --green:#06C167;--gd:#048848;--red:#D1293D;--amber:#F5A623;--blue:#276EF1;--purple:#7C3AED;
   --g1:#0d0d0d;--g2:#1a1a1a;--g3:#2a2a2a;--g4:#767676;--g5:#ebebeb;
   --r:12px;--font:'Inter',system-ui,sans-serif;
 }
 html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflow:hidden;font-size:14px;}
 #app{height:100vh;position:relative;overflow:hidden;}
 
-/* ── MAP ── */
+/* MAP */
 #map{position:absolute;inset:0;z-index:0;}
-.leaflet-tile-pane{filter:brightness(.75) saturate(.8) contrast(1.1);}
+.leaflet-tile-pane{filter:brightness(.75) saturate(.7) contrast(1.1) hue-rotate(5deg);}
 .leaflet-control-attribution,.leaflet-control-zoom{display:none!important;}
 
-/* ── FLOATING TOP ── */
+/* TOPBAR */
 .ftop{position:absolute;top:0;left:0;right:0;z-index:30;padding:14px 14px 0;display:flex;align-items:center;justify-content:space-between;pointer-events:none;}
 .logo{font-size:20px;font-weight:800;color:#fff;background:#000;border-radius:10px;padding:5px 12px;pointer-events:all;letter-spacing:-.5px;}
 .logo span{color:var(--green);}
 .ftop-right{display:flex;gap:8px;pointer-events:all;}
 .fab{width:40px;height:40px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.6);font-size:18px;position:relative;}
 .fab:hover{background:#111;}
-.fab .badge-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #000;}
+.fab .bdot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #000;}
 
-/* ── GPS BUTTON ── */
-.gps-fab{position:absolute;right:14px;z-index:25;width:44px;height:44px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.6);}
+/* GPS BTN */
+.gps-fab{position:absolute;right:14px;z-index:25;width:44px;height:44px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.6);transition:bottom .3s ease;}
 
-/* ── BOTTOM CARD ── */
+/* BOTTOM CARD */
 .bc{position:absolute;bottom:0;left:0;right:0;background:#000;border-radius:20px 20px 0 0;z-index:20;display:flex;flex-direction:column;transition:max-height .3s ease;}
-.bc.short{max-height:68vh;}
-.bc.tall{max-height:88vh;}
+.bc.short{max-height:62vh;}
+.bc.tall{max-height:90vh;}
 .handle{width:36px;height:4px;background:var(--g3);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
 
-/* ── SCREENS ── */
+/* SCREENS */
 .scr{display:none;flex-direction:column;flex:1;overflow:hidden;}
 .scr.active{display:flex;}
 
-/* ── BOTTOM NAV ── */
+/* NAV */
 .bnav{display:flex;background:#000;border-top:1px solid var(--g2);flex-shrink:0;}
-.bni{flex:1;padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--g4);transition:color .15s;font-family:var(--font);}
+.bni{flex:1;padding:9px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--g4);font-family:var(--font);}
 .bni.on,.bni:hover{color:#fff;}
 .bni i{font-size:20px;}
 .bni span{font-size:10px;font-weight:600;}
 
-/* ── COMMON ── */
-.sec-label{font-size:11px;font-weight:700;color:var(--g4);letter-spacing:.07em;text-transform:uppercase;padding:0 16px;margin-bottom:8px;flex-shrink:0;}
+/* COMMON */
+.sec-lbl{font-size:11px;font-weight:700;color:var(--g4);letter-spacing:.07em;text-transform:uppercase;padding:0 14px;margin-bottom:8px;flex-shrink:0;}
 .back-btn{width:34px;height:34px;border-radius:50%;background:var(--g2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:16px;}
 .scroll{overflow-y:auto;flex:1;}
-.scroll::-webkit-scrollbar{width:3px;}
-.scroll::-webkit-scrollbar-thumb{background:var(--g3);border-radius:2px;}
-.pill{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;}
+.scroll::-webkit-scrollbar{width:0;}
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;}
 .pill-g{background:rgba(6,193,103,.15);color:var(--green);}
 .pill-r{background:rgba(209,41,61,.15);color:var(--red);}
 .pill-a{background:rgba(245,166,35,.15);color:var(--amber);}
@@ -65,687 +64,689 @@ html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflo
 @keyframes pk{0%,100%{transform:scale(1);}50%{transform:scale(1.6);opacity:.5;}}
 @keyframes gps-pulse{0%{transform:scale(.5);opacity:.8;}100%{transform:scale(2.5);opacity:0;}}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes slide-up{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes prog{from{width:2%}to{width:100%}}
+@keyframes drain{from{width:100%}to{width:0%}}
+@keyframes pb{0%,100%{border-color:var(--green);}50%{border-color:var(--gd);}}
 
-/* ── LOGIN ── */
-#scr-login{background:#000;justify-content:space-between;padding:0;}
-.login-top{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 0;}
-.login-logo{font-size:48px;font-weight:800;letter-spacing:-2px;margin-bottom:8px;}
-.login-logo span{color:var(--green);}
-.login-sub{font-size:14px;color:var(--g4);text-align:center;margin-bottom:40px;}
-.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:16px;}
-.role-card{background:var(--g2);border:2px solid var(--g3);border-radius:14px;padding:20px 14px;cursor:pointer;text-align:center;transition:all .2s;}
-.role-card:hover,.role-card.sel{border-color:var(--green);background:#0a0a0a;}
-.role-card i{font-size:32px;display:block;margin-bottom:8px;}
-.role-card .rc-name{font-size:14px;font-weight:700;}
-.role-card .rc-sub{font-size:11px;color:var(--g4);margin-top:2px;}
-.login-bottom{padding:20px 24px 32px;}
-.f-in{width:100%;background:var(--g2);border:1px solid var(--g3);border-radius:10px;padding:12px 14px;font-size:14px;color:#fff;font-family:var(--font);outline:none;transition:border .15s;}
+/* BUTTONS */
+.btn{width:100%;padding:14px;background:var(--green);color:#000;font-size:15px;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:hover{background:var(--gd);color:#fff;}
+.btn-out{width:100%;padding:12px;background:transparent;color:#fff;font-size:13px;font-weight:700;border:1px solid var(--g3);border-radius:var(--r);cursor:pointer;font-family:var(--font);margin-top:8px;}
+.f-in{width:100%;background:var(--g2);border:1px solid var(--g3);border-radius:10px;padding:11px 13px;font-size:14px;color:#fff;font-family:var(--font);outline:none;transition:border .15s;}
 .f-in:focus{border-color:var(--green);}
-.f-sel{width:100%;background:var(--g2);border:1px solid var(--g3);border-radius:10px;padding:12px 14px;font-size:14px;color:#fff;font-family:var(--font);outline:none;appearance:none;}
+.f-sel{width:100%;background:var(--g2);border:1px solid var(--g3);border-radius:10px;padding:11px 13px;font-size:14px;color:#fff;font-family:var(--font);outline:none;appearance:none;}
 .f-grp{margin-bottom:10px;}
 .f-lbl{font-size:11px;font-weight:700;color:var(--g4);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;display:block;}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
-/* ── BUTTONS ── */
-.btn{width:100%;padding:14px;background:var(--green);color:#000;font-size:15px;font-weight:800;border:none;border-radius:var(--r);cursor:pointer;font-family:var(--font);transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.btn:hover{background:var(--gd);color:#fff;}
-.btn-out{width:100%;padding:12px;background:transparent;color:#fff;font-size:13px;font-weight:700;border:1px solid var(--g3);border-radius:var(--r);cursor:pointer;font-family:var(--font);margin-top:8px;}
-.btn-out:hover{background:var(--g2);}
-.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);}
+/* LOGIN */
+.login-wrap{flex:1;display:flex;flex-direction:column;padding:0 20px 24px;overflow-y:auto;}
+.login-logo{font-size:44px;font-weight:800;letter-spacing:-2px;text-align:center;margin:28px 0 6px;}
+.login-logo span{color:var(--green);}
+.login-sub{font-size:13px;color:var(--g4);text-align:center;margin-bottom:24px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.role-card{background:var(--g2);border:2px solid var(--g3);border-radius:14px;padding:18px 12px;cursor:pointer;text-align:center;transition:all .2s;}
+.role-card:hover,.role-card.sel{border-color:var(--green);background:#0a1a0f;}
+.role-card i{font-size:28px;display:block;margin-bottom:6px;}
+.role-card .rn{font-size:13px;font-weight:700;}
+.role-card .rs{font-size:10px;color:var(--g4);margin-top:2px;}
 
-/* ── HOME ── */
+/* HOME */
 .search-pill{margin:10px 14px 10px;background:var(--g2);border-radius:var(--r);padding:13px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid var(--g3);flex-shrink:0;}
 .search-pill:hover{background:#222;}
 .sdot{width:10px;height:10px;border-radius:50%;background:var(--green);flex-shrink:0;}
 .svc-row{display:flex;gap:8px;padding:0 14px;margin-bottom:10px;flex-shrink:0;overflow-x:auto;}
 .svc-row::-webkit-scrollbar{display:none;}
-.svc{flex:0 0 auto;width:90px;background:var(--g2);border-radius:10px;padding:10px 8px;cursor:pointer;border:2px solid transparent;text-align:center;transition:all .15s;}
+.svc{flex:0 0 auto;width:86px;background:var(--g2);border-radius:10px;padding:10px 8px;cursor:pointer;border:2px solid transparent;text-align:center;transition:all .15s;}
 .svc:hover,.svc.sel{background:#111;border-color:var(--green);}
 .svc i{font-size:22px;display:block;margin-bottom:3px;}
 .svc-n{font-size:11px;font-weight:700;}
 .svc-s{font-size:10px;color:var(--g4);margin-top:1px;}
-.ri{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--g2);cursor:pointer;}
+.ri{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid #111;cursor:pointer;}
 .ri:hover{background:#0a0a0a;}
 .ri:last-child{border-bottom:none;}
-.ri-ic{width:34px;height:34px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;color:#888;}
-.ri-n{font-size:13px;font-weight:600;}
-.ri-s{font-size:11px;color:var(--g4);}
+.ri-ic{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
 
-/* ── DEST ── */
+/* DEST / SEARCH */
 .dh{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--g2);flex-shrink:0;}
-.rp{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
-.rp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.rp-line{width:2px;height:14px;background:var(--g3);margin-left:4px;}
-.rp-in{flex:1;background:var(--g2);border:none;border-radius:8px;padding:9px 12px;font-size:13px;color:#fff;font-family:var(--font);outline:none;}
-.rp-in:focus{background:#222;}
-.add-stop{display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;margin-left:20px;}
-.ac-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--g2);cursor:pointer;}
-.ac-item:hover{background:#0a0a0a;}
-.ac-ic{width:34px;height:34px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;color:#888;}
+.rp-wrap{padding:10px 14px;flex-shrink:0;}
+.rp{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rp-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.rp-line{width:2px;height:16px;background:var(--g3);margin:0 5px;}
+.rp-in{flex:1;background:var(--g2);border:none;border-radius:10px;padding:10px 13px;font-size:14px;color:#fff;font-family:var(--font);outline:none;}
+.rp-in:focus{background:#1f1f1f;}
+.rp-in::placeholder{color:var(--g4);}
+.add-stop{display:flex;align-items:center;gap:6px;background:transparent;border:none;color:var(--green);font-size:12px;font-weight:600;cursor:pointer;padding:4px 0;margin-left:22px;}
 
-/* ── VTYPE ── */
-.vtc{background:var(--g2);border-radius:var(--r);padding:12px;margin:0 14px 8px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;gap:12px;transition:all .15s;}
-.vtc:hover,.vtc.sel{border-color:var(--green);background:#111;}
+/* SEARCH RESULTS — igual Uber */
+.sr-loading{padding:20px;text-align:center;color:var(--g4);font-size:13px;display:none;}
+.sr-loading-spin{display:inline-block;width:22px;height:22px;border:2px solid var(--g3);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:8px;}
+.sr-section-lbl{font-size:11px;font-weight:700;color:var(--g4);letter-spacing:.06em;text-transform:uppercase;padding:10px 14px 6px;display:flex;align-items:center;gap:6px;}
+.sr-item{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background .12s;border-bottom:1px solid #111;}
+.sr-item:hover{background:#0a0a0a;}
+.sr-item:last-child{border-bottom:none;}
+.sr-ic{width:40px;height:40px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;color:var(--g4);}
+.sr-ic.hospital{background:#0a1a0f;color:var(--green);}
+.sr-ic.road{background:#0a0f1a;color:var(--blue);}
+.sr-ic.city{background:#1a1a0a;color:var(--amber);}
+.sr-main{font-size:14px;font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-main b{color:#fff;font-weight:700;}
+.sr-sub{font-size:12px;color:var(--g4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sr-dist{font-size:12px;color:var(--g4);flex-shrink:0;margin-left:auto;padding-left:8px;}
+.sr-footer{padding:10px 14px;display:flex;align-items:center;gap:6px;opacity:.35;}
+.sr-footer i{font-size:14px;}
+.sr-footer span{font-size:11px;}
+
+/* VTYPE */
+.vtc{background:var(--g2);border-radius:var(--r);padding:13px;margin:0 14px 8px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;gap:12px;transition:all .15s;}
+.vtc:hover,.vtc.sel{border-color:var(--green);background:#0a1a0f;}
 .vtc-img i{font-size:32px;}
 .vtc-n{font-size:14px;font-weight:700;}
 .vtc-d{font-size:11px;color:var(--g4);margin-top:2px;}
 .vtc-e{font-size:11px;color:var(--green);font-weight:600;margin-top:3px;}
-.vtc-km{font-size:13px;font-weight:700;margin-left:auto;flex-shrink:0;text-align:right;}
+.vtc-km{font-size:13px;font-weight:700;margin-left:auto;flex-shrink:0;text-align:right;min-width:52px;}
 .form-block{margin:0 14px 8px;background:var(--g2);border-radius:var(--r);padding:12px;flex-shrink:0;}
 .form-title{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
 
-/* ── CONFIRM ── */
+/* CONFIRM */
 .ts-grid{display:flex;gap:8px;margin-bottom:12px;}
 .ts{flex:1;background:var(--g2);border-radius:10px;padding:10px;text-align:center;}
-.ts-v{font-size:15px;font-weight:800;}
+.ts-v{font-size:16px;font-weight:800;}
 .ts-l{font-size:10px;color:var(--g4);margin-top:1px;}
-.drv-card{display:flex;align-items:center;gap:12px;background:var(--g2);border-radius:var(--r);padding:12px;margin-bottom:10px;animation:slide-up .3s ease;}
+.drv-card{display:flex;align-items:center;gap:12px;background:var(--g2);border-radius:var(--r);padding:13px;margin-bottom:10px;animation:slideUp .3s ease;}
 .d-av{width:46px;height:46px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;}
 
-/* ── RIDING ── */
+/* RIDING */
 .eta-pill{position:absolute;top:70px;left:50%;transform:translateX(-50%);background:#000;color:#fff;border-radius:30px;padding:8px 18px;font-size:13px;font-weight:700;white-space:nowrap;z-index:25;box-shadow:0 2px 10px rgba(0,0,0,.6);display:none;}
 .prog{height:4px;background:var(--g2);border-radius:2px;margin-bottom:12px;overflow:hidden;}
 .prog-fill{height:100%;background:var(--green);border-radius:2px;animation:prog 14s linear forwards;}
-@keyframes prog{from{width:2%}to{width:100%}}
 .rd-drv{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .rd-av{width:42px;height:42px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
 .rd-acts{display:flex;gap:8px;}
 .rd-btn{flex:1;padding:12px;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:var(--font);}
 
-/* ── CHAT ── */
+/* CHAT */
 .chat-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
-.msg{max-width:75%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.4;animation:slide-up .2s ease;}
+.msg{max-width:78%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.4;animation:slideUp .2s ease;}
 .msg.me{background:var(--green);color:#000;align-self:flex-end;border-bottom-right-radius:4px;}
 .msg.other{background:var(--g2);color:#fff;align-self:flex-start;border-bottom-left-radius:4px;}
 .msg-time{font-size:10px;opacity:.6;margin-top:3px;}
-.chat-input{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--g2);flex-shrink:0;}
+.chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--g2);flex-shrink:0;}
 .chat-in{flex:1;background:var(--g2);border:none;border-radius:24px;padding:10px 14px;font-size:13px;color:#fff;font-family:var(--font);outline:none;}
-.chat-send{width:40px;height:40px;border-radius:50%;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;}
+.chat-send{width:40px;height:40px;border-radius:50%;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
-/* ── RATING ── */
-.stars{display:flex;gap:8px;justify-content:center;margin:16px 0;}
-.star{font-size:36px;cursor:pointer;opacity:.3;transition:opacity .15s;}
+/* RATING */
+.stars{display:flex;gap:10px;justify-content:center;margin:16px 0;}
+.star{font-size:38px;cursor:pointer;opacity:.25;transition:all .15s;}
 .star.on{opacity:1;}
-.rating-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;}
+.rtags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;}
 .rtag{padding:7px 14px;border-radius:20px;background:var(--g2);border:1px solid var(--g3);font-size:12px;cursor:pointer;transition:all .15s;}
 .rtag.sel{background:var(--green);color:#000;border-color:var(--green);}
 
-/* ── DRIVER PANEL ── */
+/* DRIVER */
 .drv-bar{padding:14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .tog{position:relative;width:54px;height:28px;background:var(--g2);border-radius:14px;cursor:pointer;border:none;transition:background .25s;}
 .tog.on{background:var(--green);}
 .tog-k{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .25s;}
 .tog.on .tog-k{left:29px;}
 .earn-box{display:flex;margin:0 14px 10px;background:var(--g2);border-radius:var(--r);overflow:hidden;flex-shrink:0;}
-.eb{flex:1;padding:10px;text-align:center;border-right:1px solid var(--g3);}
+.eb{flex:1;padding:11px;text-align:center;border-right:1px solid var(--g3);}
 .eb:last-child{border-right:none;}
-.eb-v{font-size:17px;font-weight:800;color:var(--green);}
+.eb-v{font-size:18px;font-weight:800;color:var(--green);}
 .eb-l{font-size:10px;color:var(--g4);margin-top:1px;}
 .req-card{margin:0 14px 8px;background:var(--g2);border:2px solid var(--green);border-radius:var(--r);padding:13px;flex-shrink:0;animation:pb 1.5s ease-in-out infinite;}
-@keyframes pb{0%,100%{border-color:var(--green);}50%{border-color:var(--gd);}}
 .req-timer{height:3px;background:var(--g3);border-radius:2px;margin-bottom:10px;overflow:hidden;}
 .req-fill{height:100%;background:var(--amber);animation:drain 15s linear forwards;}
-@keyframes drain{from{width:100%}to{width:0%}}
 
-/* ── ACTIVITY ── */
-.th-it{background:var(--g2);border-radius:var(--r);padding:13px;margin-bottom:8px;cursor:pointer;transition:background .15s;}
+/* ACTIVITY */
+.th-it{background:var(--g2);border-radius:var(--r);padding:13px;margin-bottom:8px;cursor:pointer;}
 .th-it:hover{background:#222;}
 .th-top{display:flex;justify-content:space-between;margin-bottom:6px;}
 .th-rt{font-size:13px;font-weight:600;margin-bottom:2px;}
 .th-sub{font-size:11px;color:var(--g4);}
 .th-bot{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--g3);font-size:11px;}
 
-/* ── PROFILE / MENU ── */
+/* MENU */
 .menu-hd{padding:16px 14px 12px;border-bottom:1px solid var(--g2);flex-shrink:0;}
 .m-av{width:56px;height:56px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;margin-bottom:8px;}
 .mi{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background .1s;}
 .mi:hover{background:#0a0a0a;}
 .mi-ic{width:36px;height:36px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
 
-/* ── SHEETS ── */
+/* SHEETS */
 .sh-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:flex-end;justify-content:center;}
 .sh-bg.open{display:flex;}
 .sheet{background:#111;border-radius:20px 20px 0 0;width:100%;max-height:88vh;display:flex;flex-direction:column;}
-.sh-hd{padding:14px 14px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #222;flex-shrink:0;}
+.sh-hd{padding:14px 14px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a;flex-shrink:0;}
 .sh-hd h3{font-size:16px;font-weight:700;}
 .sh-x{background:var(--g2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;}
 .sh-body{padding:14px;overflow-y:auto;flex:1;}
-.sh-body::-webkit-scrollbar{width:3px;}
-.sh-body::-webkit-scrollbar-thumb{background:var(--g3);}
+.sh-body::-webkit-scrollbar{width:0;}
+.fin-bar{height:5px;background:var(--g2);border-radius:3px;margin-top:4px;}
+.fin-fill{height:100%;border-radius:3px;}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.sc{background:var(--g2);border-radius:10px;padding:10px;text-align:center;}
+.sv{font-size:17px;font-weight:800;}
+.sl{font-size:10px;color:var(--g4);margin-top:1px;}
 
-/* ── RECEIPT ── */
-.receipt-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--g2);font-size:13px;}
-.receipt-row:last-child{border-bottom:none;}
-.receipt-total{display:flex;justify-content:space-between;padding:12px 0;font-size:15px;font-weight:800;}
+/* INCOMING */
+.inc-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;}
+.inc-ov.open{display:flex;}
+.inc-card{background:#111;border-radius:20px 20px 0 0;width:100%;padding:20px;animation:slideUp .3s ease;}
 
-/* ── NOTIF TOAST ── */
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#111;border:1px solid var(--g3);border-radius:14px;padding:12px 16px;font-size:13px;font-weight:600;color:#fff;z-index:999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none;display:flex;align-items:center;gap:8px;max-width:90vw;white-space:normal;}
+/* TOAST */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#111;border:1px solid var(--g3);border-radius:14px;padding:11px 18px;font-size:13px;font-weight:600;color:#fff;z-index:999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none;max-width:90vw;}
 .toast.show{opacity:1;top:80px;}
 
-/* ── INCOMING REQUEST (motorista) ── */
-.incoming-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;}
-.incoming-overlay.open{display:flex;}
-.incoming-card{background:#111;border-radius:20px 20px 0 0;width:100%;padding:20px;animation:slide-up .3s ease;}
-.inc-sound{font-size:24px;animation:pk 1s infinite;}
-
-/* ── FINANCIAL ── */
-.fin-bar-wrap{margin-bottom:10px;}
-.fin-bar{height:6px;background:var(--g2);border-radius:3px;margin-top:4px;}
-.fin-fill{height:100%;border-radius:3px;}
-.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
-.stat-card{background:var(--g2);border-radius:10px;padding:10px;text-align:center;}
-.stat-v{font-size:18px;font-weight:800;}
-.stat-l{font-size:10px;color:var(--g4);margin-top:1px;}
+/* DB STATUS */
+.db-badge{position:absolute;bottom:calc(62vh + 8px);left:14px;z-index:25;background:#000;border:1px solid var(--g3);border-radius:20px;padding:5px 10px;font-size:10px;font-weight:600;color:var(--g4);display:flex;align-items:center;gap:5px;transition:bottom .3s ease;}
+.db-badge.ok{color:var(--green);}
+.db-badge i{font-size:12px;}
 </style>
 </head>
 <body>
 <div id="app">
+  <div id="map"></div>
+  <div class="eta-pill" id="eta-pill">🚑 Em rota…</div>
 
-<!-- MAP -->
-<div id="map"></div>
-<div class="eta-pill" id="eta-pill">🚑 Em rota…</div>
-
-<!-- GPS button -->
-<button class="gps-fab" id="gps-fab" style="bottom:calc(68vh + 60px);" onclick="centerOnUser()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06C167" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 4"/></svg>
-</button>
-
-<!-- TOPBAR -->
-<div class="ftop" id="ftop">
-  <div class="logo">HM<span>Pá</span></div>
-  <div class="ftop-right">
-    <button class="fab" onclick="openSheet('sh-notif')"><i class="ti ti-bell"></i><div class="badge-dot"></div></button>
-    <button class="fab" onclick="gotoScr('scr-menu')"><i class="ti ti-menu-2"></i></button>
+  <!-- DB STATUS BADGE -->
+  <div class="db-badge" id="db-badge">
+    <i class="ti ti-database"></i>
+    <span id="db-status">PostgreSQL</span>
   </div>
-</div>
 
-<!-- ═══ BOTTOM CARD ═══ -->
-<div class="bc short" id="bc">
-  <div class="handle"></div>
+  <!-- GPS -->
+  <button class="gps-fab" id="gps-fab" style="bottom:calc(62vh + 60px);" onclick="centerOnUser()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06C167" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 4"/></svg>
+  </button>
 
-  <!-- LOGIN -->
-  <div class="scr active" id="scr-login" style="max-height:100vh;background:#000;border-radius:20px 20px 0 0;">
-    <div class="login-top">
-      <div class="login-logo">HM<span>Pá</span></div>
-      <div class="login-sub">Sistema de Transporte Hospitalar<br/>Hospital da Mulher do Pará</div>
-      <div class="role-grid">
-        <div class="role-card sel" id="rc-pass" onclick="selRole('pass')">
-          <i class="ti ti-user" style="color:var(--green);"></i>
-          <div class="rc-name">Solicitante</div>
-          <div class="rc-sub">Solicitar transporte</div>
+  <!-- TOPBAR -->
+  <div class="ftop" id="ftop">
+    <div class="logo">HM<span>Pá</span></div>
+    <div class="ftop-right">
+      <button class="fab" onclick="openSheet('sh-notif')"><i class="ti ti-bell"></i><div class="bdot"></div></button>
+      <button class="fab" onclick="gotoScr('scr-menu')"><i class="ti ti-menu-2"></i></button>
+    </div>
+  </div>
+
+  <!-- BOTTOM CARD -->
+  <div class="bc short" id="bc">
+    <div class="handle"></div>
+
+    <!-- ── LOGIN ── -->
+    <div class="scr active" id="scr-login" style="max-height:100vh;background:#000;border-radius:20px 20px 0 0;">
+      <div class="login-wrap">
+        <div class="login-logo">HM<span>Pá</span></div>
+        <div class="login-sub">Sistema de Transporte Hospitalar<br/>Hospital da Mulher do Pará</div>
+        <div class="role-grid">
+          <div class="role-card sel" id="rc-pass" onclick="selRole('pass')"><i class="ti ti-user" style="color:var(--green);"></i><div class="rn">Solicitante</div><div class="rs">Solicitar transporte</div></div>
+          <div class="role-card" id="rc-drv" onclick="selRole('drv')"><i class="ti ti-steering-wheel" style="color:var(--blue);"></i><div class="rn">Motorista</div><div class="rs">Aceitar corridas</div></div>
+          <div class="role-card" id="rc-ges" onclick="selRole('ges')"><i class="ti ti-chart-bar" style="color:var(--amber);"></i><div class="rn">Gestor</div><div class="rs">Painel gerencial</div></div>
+          <div class="role-card" id="rc-adm" onclick="selRole('adm')"><i class="ti ti-settings" style="color:var(--red);"></i><div class="rn">Administrador</div><div class="rs">Acesso total</div></div>
         </div>
-        <div class="role-card" id="rc-drv" onclick="selRole('drv')">
-          <i class="ti ti-steering-wheel" style="color:var(--blue);"></i>
-          <div class="rc-name">Motorista</div>
-          <div class="rc-sub">Aceitar corridas</div>
-        </div>
-        <div class="role-card" id="rc-ges" onclick="selRole('ges')">
-          <i class="ti ti-chart-bar" style="color:var(--amber);"></i>
-          <div class="rc-name">Gestor</div>
-          <div class="rc-sub">Painel gerencial</div>
-        </div>
-        <div class="role-card" id="rc-adm" onclick="selRole('adm')">
-          <i class="ti ti-settings" style="color:var(--red);"></i>
-          <div class="rc-name">Administrador</div>
-          <div class="rc-sub">Acesso total</div>
-        </div>
-      </div>
-    </div>
-    <div class="login-bottom">
-      <div class="f-grp"><label class="f-lbl">Matrícula / Crachá</label><input class="f-in" id="login-mat" placeholder="Ex: HMPá-0042" value="HMPá-0042"/></div>
-      <div class="f-grp"><label class="f-lbl">Senha</label><input class="f-in" id="login-pw" type="password" placeholder="••••••" value="123456"/></div>
-      <button class="btn" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
-    </div>
-  </div>
-
-  <!-- HOME (SOLICITANTE) -->
-  <div class="scr" id="scr-home">
-    <div class="search-pill" onclick="gotoScr('scr-dest')">
-      <div class="sdot"></div>
-      <span style="color:var(--g4);">Para onde você vai?</span>
-    </div>
-    <div class="sec-label">Tipo de transporte</div>
-    <div class="svc-row">
-      <div class="svc sel" onclick="selSvc(this,'amb')" id="svc-amb"><i class="ti ti-ambulance" style="color:var(--red);"></i><div class="svc-n">Ambulância</div><div class="svc-s">Clínico</div></div>
-      <div class="svc" onclick="selSvc(this,'apoio')" id="svc-apoio"><i class="ti ti-car-suv" style="color:var(--blue);"></i><div class="svc-n">Apoio</div><div class="svc-s">Pessoal/mat.</div></div>
-      <div class="svc" onclick="selSvc(this,'self')" id="svc-self"><i class="ti ti-user" style="color:var(--amber);"></i><div class="svc-n">Eu mesmo</div><div class="svc-s">Demanda própria</div></div>
-    </div>
-    <div class="sec-label">Destinos frequentes</div>
-    <div class="scroll" id="home-recent"></div>
-    <nav class="bnav" id="bnav-pass">
-      <button class="bni on" onclick="gotoScr('scr-home');setNav(this,0)"><i class="ti ti-home"></i><span>Início</span></button>
-      <button class="bni" onclick="gotoScr('scr-activity');setNav(this,1)"><i class="ti ti-clock"></i><span>Atividade</span></button>
-      <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
-      <button class="bni" onclick="gotoScr('scr-menu');setNav(this,3)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
-    </nav>
-  </div>
-
-  <!-- DEST -->
-  <div class="scr" id="scr-dest">
-    <div class="dh">
-      <button class="back-btn" onclick="gotoScr('scr-home')"><i class="ti ti-arrow-left"></i></button>
-      <div style="font-size:15px;font-weight:700;">Escolher destino</div>
-    </div>
-    <div style="padding:10px 14px;flex-shrink:0;">
-      <div class="rp"><div class="rp-dot" style="background:var(--green);"></div><input class="rp-in" value="Hospital da Mulher do Pará" readonly style="color:var(--g4);font-size:13px;"/></div>
-      <div class="rp-line"></div>
-      <div id="extra-stops"></div>
-      <div class="rp"><div class="rp-dot" style="background:#fff;"></div><input class="rp-in" id="dest-input" placeholder="Buscar destino ou endereço…" oninput="onDestIn(this.value)" onkeyup="onDestIn(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/></div>
-      <button class="add-stop" onclick="addStop()"><i class="ti ti-plus" style="font-size:13px;"></i> Adicionar parada</button>
-    </div>
-    <div class="sec-label" id="dest-label">Destinos frequentes</div>
-    <div class="scroll" id="dest-list" style="min-height:200px;">
-      <div id="ac-loading" style="display:none;padding:20px;text-align:center;color:var(--g4);font-size:13px;">
-        <div style="display:inline-block;width:22px;height:22px;border:2px solid var(--g3);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:8px;"></div>
-        <div>Buscando em qualquer lugar…</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- VTYPE -->
-  <div class="scr" id="scr-vtype">
-    <div class="dh">
-      <button class="back-btn" onclick="gotoScr('scr-dest')"><i class="ti ti-arrow-left"></i></button>
-      <div><div style="font-size:14px;font-weight:700;">Escolher veículo</div><div style="font-size:11px;color:var(--g4);margin-top:1px;" id="vtype-sub"></div></div>
-    </div>
-    <div class="scroll" style="padding-top:8px;">
-      <div class="vtc sel" onclick="selVtype(this,'amb')">
-        <div class="vtc-img"><i class="ti ti-ambulance" style="color:var(--red);"></i></div>
-        <div style="flex:1;"><div class="vtc-n">Ambulância</div><div class="vtc-d">Transporte clínico de pacientes</div><div class="vtc-e"><span class="pulse"></span> Amb.01 · ~3 min</div></div>
-        <div class="vtc-km" id="km-amb">—</div>
-      </div>
-      <div class="vtc" onclick="selVtype(this,'apoio')">
-        <div class="vtc-img"><i class="ti ti-car-suv" style="color:var(--blue);"></i></div>
-        <div style="flex:1;"><div class="vtc-n">Carro de apoio</div><div class="vtc-d">Funcionários, materiais e documentos</div><div class="vtc-e"><span class="pulse"></span> Apoio02 · ~5 min</div></div>
-        <div class="vtc-km" id="km-apoio">—</div>
-      </div>
-      <div id="form-amb" class="form-block">
-        <div class="form-title" style="color:var(--red);">Dados do paciente</div>
-        <div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" placeholder="Nome completo"/></div>
-        <div class="f-row">
-          <div class="f-grp"><label class="f-lbl">Prontuário</label><input class="f-in" placeholder="Nº"/></div>
-          <div class="f-grp"><label class="f-lbl">Estado</label><select class="f-sel"><option>Estável</option><option>Grave</option><option>Crítico</option></select></div>
-        </div>
-        <div class="f-grp"><label class="f-lbl">Suporte</label><select class="f-sel"><option>Nenhum</option><option>Oxigênio</option><option>Maca + soro</option><option>UTI móvel</option></select></div>
-      </div>
-      <div id="form-apoio" class="form-block" style="display:none;">
-        <div class="form-title" style="color:var(--blue);">Dados do transporte</div>
-        <div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel"><option>Funcionário</option><option>Medicamento</option><option>Material</option><option>Documento</option></select></div>
-        <div class="f-grp"><label class="f-lbl">Descrição</label><input class="f-in" placeholder="O que será transportado?"/></div>
-      </div>
-      <div style="padding:0 14px 14px;">
-        <button class="btn" onclick="confirmRide()">Confirmar solicitação</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONFIRM/WAITING -->
-  <div class="scr" id="scr-confirm">
-    <div style="padding:14px;flex:1;overflow-y:auto;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div><div style="font-size:16px;font-weight:800;" id="conf-st">Procurando motorista…</div><div style="font-size:12px;color:var(--g4);margin-top:2px;" id="conf-sub">Alocando veículo disponível</div></div>
-        <div style="width:34px;height:34px;border:3px solid var(--green);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;" id="conf-spinner"></div>
-      </div>
-      <div class="ts-grid">
-        <div class="ts"><div class="ts-v" id="cf-km">—</div><div class="ts-l">Distância</div></div>
-        <div class="ts"><div class="ts-v" id="cf-eta">—</div><div class="ts-l">Tempo</div></div>
-        <div class="ts"><div class="ts-v" id="cf-custo">—</div><div class="ts-l">Custo km</div></div>
-      </div>
-      <div class="drv-card" id="drv-preview" style="opacity:0;transition:opacity .5s;">
-        <div class="d-av" id="drv-av">JR</div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;" id="drv-name">João Rodrigues</div>
-          <div style="font-size:11px;color:var(--g4);" id="drv-info">Amb.01 · HPA-1234</div>
-          <div style="font-size:11px;color:var(--amber);margin-top:2px;" id="drv-stars">★★★★★ 4.9</div>
-        </div>
-        <div style="text-align:right;font-size:11px;"><div style="color:var(--g4);">Hodômetro</div><div style="font-weight:700;margin-top:1px;" id="cf-hod">—</div></div>
-      </div>
-      <button class="btn-out" onclick="cancelRide()">Cancelar solicitação</button>
-    </div>
-  </div>
-
-  <!-- RIDING -->
-  <div class="scr" id="scr-riding">
-    <div style="padding:14px;flex-shrink:0;">
-      <div class="prog"><div class="prog-fill" id="prog-fill"></div></div>
-      <div class="rd-drv">
-        <div class="rd-av" id="rd-av">JR</div>
-        <div style="flex:1;"><div style="font-size:14px;font-weight:700;" id="rd-name">João Rodrigues</div><div style="font-size:11px;color:var(--g4);">Amb.01 · <span style="color:var(--green);">Em rota</span></div></div>
-        <button class="fab" style="box-shadow:none;background:var(--g2);" onclick="gotoScr('scr-chat')"><i class="ti ti-message"></i></button>
-      </div>
-      <div class="rd-acts">
-        <button class="rd-btn" style="background:var(--g2);color:#fff;" onclick="callDriver()"><i class="ti ti-phone"></i> Ligar</button>
-        <button class="rd-btn" style="background:var(--red);color:#fff;" onclick="cancelRide()">Cancelar</button>
-        <button class="rd-btn" style="background:var(--green);color:#000;" onclick="finishRide()">Concluir</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- RATING -->
-  <div class="scr" id="scr-rating">
-    <div style="padding:20px 14px;text-align:center;flex:1;overflow-y:auto;">
-      <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Como foi a corrida?</div>
-      <div style="font-size:13px;color:var(--g4);margin-bottom:4px;" id="rating-info">João Rodrigues · Amb.01</div>
-      <div class="stars" id="stars">
-        <span class="star on" onclick="rateStar(1)">★</span>
-        <span class="star on" onclick="rateStar(2)">★</span>
-        <span class="star on" onclick="rateStar(3)">★</span>
-        <span class="star on" onclick="rateStar(4)">★</span>
-        <span class="star on" onclick="rateStar(5)">★</span>
-      </div>
-      <div class="rating-tags" id="rating-tags">
-        <div class="rtag" onclick="toggleTag(this)">Pontual</div>
-        <div class="rtag" onclick="toggleTag(this)">Cuidadoso</div>
-        <div class="rtag" onclick="toggleTag(this)">Gentil</div>
-        <div class="rtag" onclick="toggleTag(this)">Veículo limpo</div>
-        <div class="rtag" onclick="toggleTag(this)">Comunicativo</div>
-        <div class="rtag" onclick="toggleTag(this)">Rota correta</div>
-      </div>
-      <div class="f-grp" style="text-align:left;"><label class="f-lbl">Comentário (opcional)</label><textarea class="f-in" rows="2" placeholder="Deixe um feedback…" style="resize:none;"></textarea></div>
-      <button class="btn" onclick="submitRating()" style="margin-top:12px;"><i class="ti ti-check"></i> Enviar avaliação</button>
-      <button class="btn-out" onclick="gotoScr('scr-home')">Pular</button>
-    </div>
-  </div>
-
-  <!-- CHAT -->
-  <div class="scr" id="scr-chat">
-    <div class="dh">
-      <button class="back-btn" onclick="gotoScr('scr-riding')"><i class="ti ti-arrow-left"></i></button>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:700;" id="chat-title">João Rodrigues</div><div style="font-size:11px;color:var(--green);">Em rota · Online</div></div>
-      <button class="fab" style="box-shadow:none;background:var(--g2);" onclick="callDriver()"><i class="ti ti-phone"></i></button>
-    </div>
-    <div class="chat-msgs" id="chat-msgs">
-      <div class="msg other">Estou a caminho! Chego em aproximadamente 4 minutos.<div class="msg-time">09:14</div></div>
-      <div class="msg other">Vou pela entrada principal, pode aguardar?<div class="msg-time">09:15</div></div>
-    </div>
-    <div class="chat-input">
-      <input class="chat-in" id="chat-in" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')sendMsg()"/>
-      <button class="chat-send" onclick="sendMsg()"><i class="ti ti-send" style="font-size:16px;color:#000;"></i></button>
-    </div>
-  </div>
-
-  <!-- ACTIVITY -->
-  <div class="scr" id="scr-activity">
-    <div style="padding:12px 14px;flex-shrink:0;">
-      <button class="back-btn" onclick="gotoScr('scr-home')" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
-      <div style="font-size:18px;font-weight:800;">Atividade</div>
-      <div style="font-size:12px;color:var(--g4);margin-top:2px;">18 corridas · este mês</div>
-    </div>
-    <div class="scroll" style="padding:0 14px 10px;" id="activity-list"></div>
-    <nav class="bnav">
-      <button class="bni" onclick="gotoScr('scr-home');setNav(this,0)"><i class="ti ti-home"></i><span>Início</span></button>
-      <button class="bni on" onclick="setNav(this,1)"><i class="ti ti-clock"></i><span>Atividade</span></button>
-      <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
-      <button class="bni" onclick="gotoScr('scr-menu');setNav(this,3)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
-    </nav>
-  </div>
-
-  <!-- DRIVER SCREEN -->
-  <div class="scr" id="scr-driver">
-    <div class="drv-bar">
-      <div>
-        <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;">Status</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
-          <button class="tog on" id="tog-btn" onclick="toggleOnline()"><div class="tog-k"></div></button>
-          <span style="font-size:14px;font-weight:700;" id="online-lbl">Online</span>
+        <div class="f-grp"><label class="f-lbl">Matrícula / Crachá</label><input class="f-in" id="login-mat" placeholder="Ex: HMPá-0042" value="HMPá-0042"/></div>
+        <div class="f-grp"><label class="f-lbl">Senha</label><input class="f-in" type="password" placeholder="••••••" value="123456"/></div>
+        <button class="btn" onclick="doLogin()"><i class="ti ti-login"></i> Entrar</button>
+        <div style="margin-top:16px;padding:12px;background:var(--g2);border-radius:10px;font-size:11px;color:var(--g4);line-height:1.6;">
+          <div style="font-weight:700;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:6px;"><i class="ti ti-stack" style="font-size:14px;color:var(--green);"></i> Stack tecnológica</div>
+          <div>🗺 <b>Leaflet</b> + <b>OpenStreetMap</b> — mapa</div>
+          <div>🔍 <b>Nominatim</b> — busca de endereços</div>
+          <div>🛣 <b>OSRM</b> — rotas e distâncias</div>
+          <div>🗄 <b>PostgreSQL + PostGIS</b> — banco geoespacial</div>
         </div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:13px;font-weight:700;" id="drv-panel-name">João Rodrigues</div>
-        <div style="font-size:11px;color:var(--g4);">Amb.01 · HPA-1234</div>
-        <div style="font-size:11px;color:var(--amber);">★ 4.9</div>
-      </div>
     </div>
-    <div class="earn-box">
-      <div class="eb"><div class="eb-v" id="earn-trips">18</div><div class="eb-l">Corridas</div></div>
-      <div class="eb"><div class="eb-v" id="earn-km">412</div><div class="eb-l">Km hoje</div></div>
-      <div class="eb"><div class="eb-v">~8h</div><div class="eb-l">Serviço</div></div>
-    </div>
-    <div class="req-card" id="req-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span class="pill pill-r"><i class="ti ti-ambulance"></i> URGENTE</span>
-        <span style="font-size:11px;color:var(--g4);">0,6 km de você</span>
-      </div>
-      <div style="margin-bottom:8px;">
-        <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-bottom:4px;"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>Pronto-socorro</div>
-        <div style="width:2px;height:8px;background:var(--g3);margin-left:2.5px;"></div>
-        <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-top:4px;"><div style="width:7px;height:7px;border-radius:50%;background:#fff;flex-shrink:0;"></div>UTI Adulto — Bloco C</div>
-      </div>
-      <div class="req-timer"><div class="req-fill"></div></div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-out" style="margin:0;flex:1;padding:10px;" onclick="rejectReq()">Recusar</button>
-        <button class="btn" style="margin:0;flex:2;padding:10px;font-size:13px;" onclick="acceptReq()">Aceitar corrida</button>
-      </div>
-    </div>
-    <div class="scroll" style="padding:0 14px 10px;" id="drv-history"></div>
-    <nav class="bnav">
-      <button class="bni on" onclick="setNav(this,0)"><i class="ti ti-steering-wheel"></i><span>Corridas</span></button>
-      <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Ganhos</span></button>
-      <button class="bni" onclick="gotoScr('scr-activity');setNav(this,2)"><i class="ti ti-clock"></i><span>Histórico</span></button>
-      <button class="bni" onclick="gotoScr('scr-menu');setNav(this,3)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
-    </nav>
-  </div>
 
-  <!-- MENU -->
-  <div class="scr" id="scr-menu">
-    <div class="menu-hd">
-      <button class="back-btn" onclick="goBack()" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
-      <div class="m-av" id="menu-av">AD</div>
-      <div style="font-size:17px;font-weight:800;" id="menu-name">Administrador</div>
-      <div style="font-size:12px;color:var(--g4);margin-top:1px;" id="menu-role">Hospital da Mulher do Pará</div>
-    </div>
-    <div class="scroll" id="menu-items"></div>
-  </div>
-
-</div><!-- /bc -->
-
-<!-- INCOMING REQUEST OVERLAY (motorista) -->
-<div class="incoming-overlay" id="incoming-overlay">
-  <div class="incoming-card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <div style="font-size:18px;font-weight:800;">Nova solicitação <span class="inc-sound">🔔</span></div>
-      <span class="pill pill-r">URGENTE</span>
-    </div>
-    <div style="background:var(--g2);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--g4);">
-        <span>Tipo: <b style="color:#fff;">Ambulância</b></span>
-        <span>0,6 km de você</span>
+    <!-- ── HOME ── -->
+    <div class="scr" id="scr-home">
+      <div class="search-pill" onclick="gotoScr('scr-dest')">
+        <div class="sdot"></div>
+        <span style="color:var(--g4);">Para onde você vai?</span>
       </div>
-      <div style="font-size:13px;margin-bottom:4px;">📍 <b>Pronto-socorro</b></div>
-      <div style="font-size:13px;color:var(--g4);margin-left:20px;margin-bottom:4px;">↓</div>
-      <div style="font-size:13px;">📍 <b>UTI Adulto — Bloco C</b></div>
+      <div class="sec-lbl">Tipo de transporte</div>
+      <div class="svc-row">
+        <div class="svc sel" onclick="selSvc(this,'amb')"><i class="ti ti-ambulance" style="color:var(--red);"></i><div class="svc-n">Ambulância</div><div class="svc-s">Transporte clínico</div></div>
+        <div class="svc" onclick="selSvc(this,'apoio')"><i class="ti ti-car-suv" style="color:var(--blue);"></i><div class="svc-n">Apoio</div><div class="svc-s">Pessoal/mat.</div></div>
+        <div class="svc" onclick="selSvc(this,'self')"><i class="ti ti-user" style="color:var(--amber);"></i><div class="svc-n">Eu mesmo</div><div class="svc-s">Demanda própria</div></div>
+      </div>
+      <div class="sec-lbl">Destinos frequentes</div>
+      <div class="scroll" id="home-recent"></div>
+      <nav class="bnav" id="bnav-home">
+        <button class="bni on" onclick="gotoScr('scr-home');setNav(this)"><i class="ti ti-home"></i><span>Início</span></button>
+        <button class="bni" onclick="gotoScr('scr-activity');setNav(this)"><i class="ti ti-clock"></i><span>Atividade</span></button>
+        <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
+        <button class="bni" onclick="gotoScr('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
     </div>
-    <div class="req-timer" style="margin-bottom:14px;"><div class="req-fill"></div></div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn-out" style="margin:0;flex:1;" onclick="closeIncoming(false)">Recusar</button>
-      <button class="btn" style="margin:0;flex:2;" onclick="closeIncoming(true)">Aceitar corrida</button>
-    </div>
-  </div>
-</div>
 
-<!-- ═══ SHEETS ═══ -->
-<!-- NOTIFICAÇÕES -->
+    <!-- ── DEST / SEARCH ── -->
+    <div class="scr" id="scr-dest">
+      <div class="dh">
+        <button class="back-btn" onclick="gotoScr('scr-home')"><i class="ti ti-arrow-left"></i></button>
+        <div style="font-size:15px;font-weight:700;">Planeje sua viagem</div>
+      </div>
+      <div class="rp-wrap">
+        <div class="rp">
+          <div class="rp-dot" style="background:var(--green);"></div>
+          <input class="rp-in" value="Hospital da Mulher do Pará" readonly style="color:var(--g4);font-size:13px;"/>
+        </div>
+        <div style="width:2px;height:16px;background:var(--g3);margin:0 5px 6px;"></div>
+        <div id="extra-stops"></div>
+        <div class="rp">
+          <div class="rp-dot" style="background:#fff;border:2px solid var(--g4);"></div>
+          <input class="rp-in" id="dest-input" placeholder="Para onde?" oninput="onDestIn(this.value)" onkeyup="onDestIn(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+          <button id="dest-clear" onclick="clearDest()" style="display:none;background:var(--g3);border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:#fff;font-size:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i class="ti ti-x"></i></button>
+        </div>
+        <button class="add-stop" onclick="addStop()"><i class="ti ti-plus" style="font-size:13px;"></i> Adicionar parada</button>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="scroll" id="dest-results">
+        <div class="sr-loading" id="sr-loading">
+          <div class="sr-loading-spin"></div>
+          <div>Buscando no OpenStreetMap…</div>
+        </div>
+        <div id="sr-body"></div>
+      </div>
+    </div>
+
+    <!-- ── VTYPE ── -->
+    <div class="scr" id="scr-vtype">
+      <div class="dh">
+        <button class="back-btn" onclick="gotoScr('scr-dest')"><i class="ti ti-arrow-left"></i></button>
+        <div><div style="font-size:14px;font-weight:700;">Escolher veículo</div><div style="font-size:11px;color:var(--g4);margin-top:1px;" id="vtype-sub"></div></div>
+      </div>
+      <div class="scroll" style="padding-top:8px;">
+        <div class="vtc sel" onclick="selVtype(this,'amb')">
+          <div class="vtc-img"><i class="ti ti-ambulance" style="color:var(--red);"></i></div>
+          <div style="flex:1;"><div class="vtc-n">Ambulância</div><div class="vtc-d">Transporte clínico de pacientes</div><div class="vtc-e"><span class="pulse"></span> Amb.01 · ~3 min</div></div>
+          <div class="vtc-km" id="km-amb">—</div>
+        </div>
+        <div class="vtc" onclick="selVtype(this,'apoio')">
+          <div class="vtc-img"><i class="ti ti-car-suv" style="color:var(--blue);"></i></div>
+          <div style="flex:1;"><div class="vtc-n">Carro de apoio</div><div class="vtc-d">Funcionários, materiais e documentos</div><div class="vtc-e"><span class="pulse"></span> Apoio02 · ~5 min</div></div>
+          <div class="vtc-km" id="km-apoio">—</div>
+        </div>
+        <div id="form-amb" class="form-block">
+          <div class="form-title" style="color:var(--red);">Dados do paciente</div>
+          <div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" placeholder="Nome completo"/></div>
+          <div class="f-row">
+            <div class="f-grp"><label class="f-lbl">Prontuário</label><input class="f-in" placeholder="Nº"/></div>
+            <div class="f-grp"><label class="f-lbl">Estado</label><select class="f-sel"><option>Estável</option><option>Grave</option><option>Crítico</option></select></div>
+          </div>
+          <div class="f-grp"><label class="f-lbl">Suporte</label><select class="f-sel"><option>Nenhum</option><option>Oxigênio</option><option>Maca + soro</option><option>UTI móvel</option></select></div>
+        </div>
+        <div id="form-apoio" class="form-block" style="display:none;">
+          <div class="form-title" style="color:var(--blue);">Dados do transporte</div>
+          <div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel"><option>Funcionário</option><option>Medicamento</option><option>Material</option><option>Documento</option></select></div>
+          <div class="f-grp"><label class="f-lbl">Descrição</label><input class="f-in" placeholder="O que será transportado?"/></div>
+        </div>
+        <div style="padding:0 14px 14px;"><button class="btn" onclick="confirmRide()">Confirmar solicitação</button></div>
+      </div>
+    </div>
+
+    <!-- ── CONFIRM ── -->
+    <div class="scr" id="scr-confirm">
+      <div style="padding:14px;flex:1;overflow-y:auto;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div><div style="font-size:16px;font-weight:800;" id="conf-st">Procurando motorista…</div><div style="font-size:12px;color:var(--g4);margin-top:2px;" id="conf-sub">Alocando veículo disponível</div></div>
+          <div style="width:34px;height:34px;border:3px solid var(--green);border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;" id="conf-spin"></div>
+        </div>
+        <div class="ts-grid">
+          <div class="ts"><div class="ts-v" id="cf-km">—</div><div class="ts-l">Distância</div></div>
+          <div class="ts"><div class="ts-v" id="cf-eta">—</div><div class="ts-l">Tempo</div></div>
+          <div class="ts"><div class="ts-v" id="cf-custo">—</div><div class="ts-l">Custo km</div></div>
+        </div>
+        <div class="drv-card" id="drv-preview" style="opacity:0;transition:opacity .5s;">
+          <div class="d-av" id="drv-av">JR</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:700;" id="drv-name">João Rodrigues</div><div style="font-size:11px;color:var(--g4);" id="drv-info">Amb.01 · HPA-1234</div><div style="font-size:11px;color:var(--amber);margin-top:2px;">★★★★★ 4.9</div></div>
+          <div style="text-align:right;font-size:11px;"><div style="color:var(--g4);">Hodômetro</div><div style="font-weight:700;margin-top:1px;" id="cf-hod">—</div></div>
+        </div>
+        <button class="btn-out" onclick="cancelRide()">Cancelar solicitação</button>
+      </div>
+    </div>
+
+    <!-- ── RIDING ── -->
+    <div class="scr" id="scr-riding">
+      <div style="padding:14px;flex-shrink:0;">
+        <div class="prog"><div class="prog-fill"></div></div>
+        <div class="rd-drv">
+          <div class="rd-av">JR</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--g4);">Amb.01 · <span style="color:var(--green);">Em rota</span></div></div>
+          <button class="fab" style="box-shadow:none;background:var(--g2);" onclick="gotoScr('scr-chat')"><i class="ti ti-message"></i></button>
+        </div>
+        <div class="rd-acts">
+          <button class="rd-btn" style="background:var(--g2);color:#fff;" onclick="toast('📞 Ligando para João…')"><i class="ti ti-phone"></i> Ligar</button>
+          <button class="rd-btn" style="background:var(--red);color:#fff;" onclick="cancelRide()">Cancelar</button>
+          <button class="rd-btn" style="background:var(--green);color:#000;" onclick="finishRide()">Concluir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RATING ── -->
+    <div class="scr" id="scr-rating">
+      <div style="padding:20px 14px;text-align:center;flex:1;overflow-y:auto;">
+        <div style="font-size:22px;font-weight:800;margin-bottom:4px;">Como foi a corrida?</div>
+        <div style="font-size:13px;color:var(--g4);margin-bottom:4px;">João Rodrigues · Amb.01</div>
+        <div class="stars" id="stars">
+          <span class="star on" onclick="rateStar(1)">★</span><span class="star on" onclick="rateStar(2)">★</span><span class="star on" onclick="rateStar(3)">★</span><span class="star on" onclick="rateStar(4)">★</span><span class="star on" onclick="rateStar(5)">★</span>
+        </div>
+        <div class="rtags">
+          <div class="rtag" onclick="this.classList.toggle('sel')">Pontual</div>
+          <div class="rtag" onclick="this.classList.toggle('sel')">Cuidadoso</div>
+          <div class="rtag" onclick="this.classList.toggle('sel')">Gentil</div>
+          <div class="rtag" onclick="this.classList.toggle('sel')">Veículo limpo</div>
+          <div class="rtag" onclick="this.classList.toggle('sel')">Comunicativo</div>
+          <div class="rtag" onclick="this.classList.toggle('sel')">Rota correta</div>
+        </div>
+        <div class="f-grp" style="text-align:left;"><label class="f-lbl">Comentário (opcional)</label><textarea class="f-in" rows="2" placeholder="Feedback…" style="resize:none;"></textarea></div>
+        <button class="btn" onclick="submitRating()" style="margin-top:12px;"><i class="ti ti-check"></i> Enviar avaliação</button>
+        <button class="btn-out" onclick="gotoScr('scr-home')">Pular</button>
+      </div>
+    </div>
+
+    <!-- ── CHAT ── -->
+    <div class="scr" id="scr-chat">
+      <div class="dh">
+        <button class="back-btn" onclick="gotoScr('scr-riding')"><i class="ti ti-arrow-left"></i></button>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--green);">Em rota · Online</div></div>
+        <button class="fab" style="box-shadow:none;background:var(--g2);" onclick="toast('📞 Ligando…')"><i class="ti ti-phone"></i></button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs">
+        <div class="msg other">Estou a caminho! Chego em ~4 minutos.<div class="msg-time">agora</div></div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-in" id="chat-in" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button class="chat-send" onclick="sendMsg()"><i class="ti ti-send" style="font-size:16px;color:#000;"></i></button>
+      </div>
+    </div>
+
+    <!-- ── DRIVER ── -->
+    <div class="scr" id="scr-driver">
+      <div class="drv-bar">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;">Status</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+            <button class="tog on" id="tog-btn" onclick="toggleOnline()"><div class="tog-k"></div></button>
+            <span style="font-size:14px;font-weight:700;" id="online-lbl">Online</span>
+          </div>
+        </div>
+        <div style="text-align:right;"><div style="font-size:13px;font-weight:700;" id="drv-pname">João Rodrigues</div><div style="font-size:11px;color:var(--g4);">Amb.01 · HPA-1234</div><div style="font-size:11px;color:var(--amber);">★ 4.9</div></div>
+      </div>
+      <div class="earn-box">
+        <div class="eb"><div class="eb-v" id="earn-trips">18</div><div class="eb-l">Corridas</div></div>
+        <div class="eb"><div class="eb-v">412 km</div><div class="eb-l">Rodados</div></div>
+        <div class="eb"><div class="eb-v">~8h</div><div class="eb-l">Serviço</div></div>
+      </div>
+      <div class="req-card" id="req-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="pill pill-r"><i class="ti ti-ambulance"></i> URGENTE</span>
+          <span style="font-size:11px;color:var(--g4);">0,6 km de você</span>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-bottom:4px;"><div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>Pronto-socorro</div>
+          <div style="width:2px;height:8px;background:var(--g3);margin-left:2.5px;"></div>
+          <div style="display:flex;align-items:center;gap:7px;font-size:13px;margin-top:4px;"><div style="width:7px;height:7px;border-radius:50%;background:#fff;flex-shrink:0;"></div>UTI Adulto — Bloco C</div>
+        </div>
+        <div class="req-timer"><div class="req-fill"></div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-out" style="margin:0;flex:1;padding:10px;" onclick="rejectReq()">Recusar</button>
+          <button class="btn" style="margin:0;flex:2;padding:10px;font-size:13px;" onclick="acceptReq()">Aceitar corrida</button>
+        </div>
+      </div>
+      <div class="scroll" style="padding:0 14px 10px;" id="drv-hist"></div>
+      <nav class="bnav">
+        <button class="bni on" onclick="setNav(this)"><i class="ti ti-steering-wheel"></i><span>Corridas</span></button>
+        <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Ganhos</span></button>
+        <button class="bni" onclick="gotoScr('scr-activity');setNav(this)"><i class="ti ti-clock"></i><span>Histórico</span></button>
+        <button class="bni" onclick="gotoScr('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
+    </div>
+
+    <!-- ── ACTIVITY ── -->
+    <div class="scr" id="scr-activity">
+      <div style="padding:12px 14px;flex-shrink:0;">
+        <button class="back-btn" onclick="goBack()" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
+        <div style="font-size:18px;font-weight:800;">Atividade</div>
+        <div style="font-size:12px;color:var(--g4);margin-top:2px;">18 corridas · este mês</div>
+      </div>
+      <div class="scroll" style="padding:0 14px 10px;" id="activity-list"></div>
+      <nav class="bnav">
+        <button class="bni" onclick="gotoScr('scr-home');setNav(this)"><i class="ti ti-home"></i><span>Início</span></button>
+        <button class="bni on" onclick="setNav(this)"><i class="ti ti-clock"></i><span>Atividade</span></button>
+        <button class="bni" onclick="openSheet('sh-relatorio')"><i class="ti ti-chart-bar"></i><span>Relatório</span></button>
+        <button class="bni" onclick="gotoScr('scr-menu');setNav(this)"><i class="ti ti-menu-2"></i><span>Menu</span></button>
+      </nav>
+    </div>
+
+    <!-- ── MENU ── -->
+    <div class="scr" id="scr-menu">
+      <div class="menu-hd">
+        <button class="back-btn" onclick="goBack()" style="margin-bottom:8px;"><i class="ti ti-arrow-left"></i></button>
+        <div class="m-av" id="menu-av">AD</div>
+        <div style="font-size:17px;font-weight:800;" id="menu-name">Administrador</div>
+        <div style="font-size:12px;color:var(--g4);margin-top:1px;" id="menu-role">HMPá · Administrador</div>
+      </div>
+      <div class="scroll" id="menu-items"></div>
+    </div>
+
+  </div><!-- /bc -->
+</div><!-- /app -->
+
+<!-- ══ SHEETS ══ -->
 <div class="sh-bg" id="sh-notif" onclick="closeBg(event,'sh-notif')">
   <div class="sheet"><div class="sh-hd"><h3>Notificações</h3><button class="sh-x" onclick="closeSheet('sh-notif')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body" id="notif-list"></div></div>
 </div>
 
-<!-- RELATÓRIO -->
 <div class="sh-bg" id="sh-relatorio" onclick="closeBg(event,'sh-relatorio')">
   <div class="sheet"><div class="sh-hd"><h3>Relatório financeiro</h3><button class="sh-x" onclick="closeSheet('sh-relatorio')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body">
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-v" style="color:var(--green);">237</div><div class="stat-l">Corridas</div></div>
-      <div class="stat-card"><div class="stat-v" style="color:var(--green);">1.842</div><div class="stat-l">Km rodados</div></div>
-      <div class="stat-card"><div class="stat-v" style="color:var(--amber);">R$4.280</div><div class="stat-l">Custo total</div></div>
-    </div>
-    <div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Distribuição de custos</div>
-    <div class="fin-bar-wrap"><div style="display:flex;justify-content:space-between;font-size:12px;"><span>Combustível</span><span style="font-weight:700;color:var(--green);">R$ 2.140 · 50%</span></div><div class="fin-bar"><div class="fin-fill" style="width:50%;background:var(--green);"></div></div></div>
-    <div class="fin-bar-wrap"><div style="display:flex;justify-content:space-between;font-size:12px;"><span>Manutenção</span><span style="font-weight:700;color:var(--amber);">R$ 856 · 20%</span></div><div class="fin-bar"><div class="fin-fill" style="width:20%;background:var(--amber);"></div></div></div>
-    <div class="fin-bar-wrap" style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12px;"><span>Horas extras</span><span style="font-weight:700;color:var(--blue);">R$ 642 · 15%</span></div><div class="fin-bar"><div class="fin-fill" style="width:15%;background:var(--blue);"></div></div></div>
-    <div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Por veículo</div>
-    <div style="background:var(--g2);border-radius:10px;overflow:hidden;margin-bottom:14px;">
+    <div class="sg"><div class="sc"><div class="sv" style="color:var(--green);">237</div><div class="sl">Corridas</div></div><div class="sc"><div class="sv" style="color:var(--green);">1.842</div><div class="sl">Km rodados</div></div><div class="sc"><div class="sv" style="color:var(--amber);">R$4.280</div><div class="sl">Custo total</div></div></div>
+    <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Combustível</span><span style="font-weight:700;color:var(--green);">R$ 2.140</span></div><div class="fin-bar"><div class="fin-fill" style="width:50%;background:var(--green);"></div></div></div>
+    <div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Manutenção</span><span style="font-weight:700;color:var(--amber);">R$ 856</span></div><div class="fin-bar"><div class="fin-fill" style="width:20%;background:var(--amber);"></div></div></div>
+    <div style="margin-bottom:14px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>Horas extras</span><span style="font-weight:700;color:var(--blue);">R$ 642</span></div><div class="fin-bar"><div class="fin-fill" style="width:15%;background:var(--blue);"></div></div></div>
+    <div style="background:var(--g2);border-radius:10px;overflow:hidden;margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--g3);font-size:12px;"><span>🚑 Ambulância 01</span><span style="font-weight:700;">R$ 1.144</span></div>
       <div style="display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--g3);font-size:12px;"><span>🚗 Apoio 01</span><span style="font-weight:700;">R$ 758</span></div>
       <div style="display:flex;justify-content:space-between;padding:10px 13px;font-size:12px;"><span>🚗 Apoio 02</span><span style="font-weight:700;">R$ 812</span></div>
     </div>
-    <button class="btn" onclick="toast('Relatório exportado em PDF! ✓')"><i class="ti ti-file-export"></i> Exportar PDF</button>
+    <button class="btn" onclick="toast('Relatório exportado!')"><i class="ti ti-file-export"></i> Exportar PDF</button>
   </div></div>
 </div>
 
-<!-- RECIBO -->
-<div class="sh-bg" id="sh-recibo" onclick="closeBg(event,'sh-recibo')">
-  <div class="sheet"><div class="sh-hd"><h3>Recibo da corrida</h3><button class="sh-x" onclick="closeSheet('sh-recibo')"><i class="ti ti-x"></i></button></div>
-  <div class="sh-body">
-    <div style="text-align:center;padding:16px 0;">
-      <div style="font-size:32px;font-weight:800;color:var(--green);" id="rec-custo">R$ 1,44</div>
-      <div style="font-size:13px;color:var(--g4);margin-top:4px;" id="rec-date">Hoje, 09:14</div>
-    </div>
-    <div style="background:var(--g2);border-radius:10px;padding:12px;margin-bottom:12px;" id="rec-route"></div>
-    <div style="background:var(--g2);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div class="receipt-row"><span>Distância</span><span id="rec-km">—</span></div>
-      <div class="receipt-row"><span>Tempo</span><span id="rec-tempo">—</span></div>
-      <div class="receipt-row"><span>Veículo</span><span id="rec-veiculo">Amb.01</span></div>
-      <div class="receipt-row"><span>Motorista</span><span id="rec-motorista">João Rodrigues</span></div>
-      <div class="receipt-row"><span>Hodômetro inicial</span><span id="rec-hod-i">85.000 km</span></div>
-      <div class="receipt-row"><span>Hodômetro final</span><span id="rec-hod-f">85.002 km</span></div>
-      <div class="receipt-total"><span>Total</span><span id="rec-total" style="color:var(--green);">R$ 1,44</span></div>
-    </div>
-    <button class="btn" onclick="toast('Recibo compartilhado!')"><i class="ti ti-share"></i> Compartilhar recibo</button>
-  </div></div>
-</div>
-
-<!-- EMPRESA -->
 <div class="sh-bg" id="sh-empresa" onclick="closeBg(event,'sh-empresa')">
   <div class="sheet"><div class="sh-hd"><h3>Empresa</h3><button class="sh-x" onclick="closeSheet('sh-empresa')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body">
     <div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" value="Hospital da Mulher do Pará — HMPá"/></div>
     <div class="f-grp"><label class="f-lbl">CNPJ</label><input class="f-in" value="04.913.025/0001-44"/></div>
     <div class="f-grp"><label class="f-lbl">Responsável</label><input class="f-in" value="Sra. Fernanda Tavares"/></div>
-    <div class="f-grp"><label class="f-lbl">Endereço (origem padrão)</label><input class="f-in" value="Av. Augusto Montenegro, 4420 — Belém/PA"/></div>
+    <div class="f-grp"><label class="f-lbl">Endereço de origem</label><input class="f-in" value="Av. Augusto Montenegro, 4420 — Belém/PA"/></div>
     <div class="f-row"><div class="f-grp"><label class="f-lbl">Custo/km (R$)</label><input class="f-in" value="0,80"/></div><div class="f-grp"><label class="f-lbl">Preço litro</label><input class="f-in" value="6,89"/></div></div>
-    <button class="btn" onclick="closeSheet('sh-empresa');toast('Dados da empresa salvos!')"><i class="ti ti-device-floppy"></i> Salvar</button>
+    <button class="btn" onclick="closeSheet('sh-empresa');toast('Dados salvos! ✓')"><i class="ti ti-device-floppy"></i> Salvar</button>
   </div></div>
 </div>
 
-<!-- MOTORISTAS -->
 <div class="sh-bg" id="sh-motoristas" onclick="closeBg(event,'sh-motoristas')">
   <div class="sheet"><div class="sh-hd"><h3>Motoristas</h3><button class="sh-x" onclick="closeSheet('sh-motoristas')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body">
-    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;">
-      <div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--g3);"><div style="width:36px;height:36px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">JR</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">João Rodrigues</div><div style="font-size:11px;color:var(--g4);">CNH-D · Amb.01 · ★4.9</div></div><span class="pill pill-g">Online</span></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--g3);"><div style="width:36px;height:36px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">MS</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Marcos Santana</div><div style="font-size:11px;color:var(--g4);">CNH-D · Apoio02 · ★4.8</div></div><span class="pill pill-g">Disponível</span></div>
-      <div style="display:flex;align-items:center;gap:10px;padding:12px;"><div style="width:36px;height:36px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;color:var(--red);">TF</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Thiago Ferreira</div><div style="font-size:11px;color:var(--g4);">CNH-B · Apoio01 · ★4.7</div></div><span class="pill pill-a">Afastado</span></div>
-    </div>
+    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;" id="motoristas-list"></div>
     <div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Cadastrar novo</div>
-    <div class="f-row"><div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" placeholder="Nome completo"/></div><div class="f-grp"><label class="f-lbl">CNH</label><input class="f-in" placeholder="Número"/></div></div>
-    <div class="f-row"><div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel"><option>B</option><option>D</option><option>E</option></select></div><div class="f-grp"><label class="f-lbl">Turno</label><select class="f-sel"><option>Matutino</option><option>Vespertino</option><option>Noturno</option></select></div></div>
-    <button class="btn" onclick="closeSheet('sh-motoristas');toast('Motorista cadastrado!')"><i class="ti ti-plus"></i> Cadastrar</button>
+    <div class="f-row"><div class="f-grp"><label class="f-lbl">Nome</label><input class="f-in" id="new-mot-name" placeholder="Nome completo"/></div><div class="f-grp"><label class="f-lbl">CNH</label><input class="f-in" id="new-mot-cnh" placeholder="Número"/></div></div>
+    <div class="f-row"><div class="f-grp"><label class="f-lbl">Categoria</label><select class="f-sel" id="new-mot-cat"><option>B</option><option>D</option><option>E</option></select></div><div class="f-grp"><label class="f-lbl">Turno</label><select class="f-sel" id="new-mot-turno"><option>Matutino</option><option>Vespertino</option><option>Noturno</option></select></div></div>
+    <button class="btn" onclick="addMotorista()"><i class="ti ti-plus"></i> Cadastrar no banco</button>
   </div></div>
 </div>
 
-<!-- VEÍCULOS -->
 <div class="sh-bg" id="sh-veiculos" onclick="closeBg(event,'sh-veiculos')">
   <div class="sheet"><div class="sh-hd"><h3>Veículos</h3><button class="sh-x" onclick="closeSheet('sh-veiculos')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body">
-    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;">
-      <div style="padding:12px;border-bottom:1px solid var(--g3);display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">🚑</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Amb.01 — HPA-1234</div><div style="font-size:11px;color:var(--g4);">Renault Master · 85.000 km</div></div><span class="pill pill-a">Em corrida</span></div>
-      <div style="padding:12px;border-bottom:1px solid var(--g3);display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">🚗</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Apoio01 — HPA-5678</div><div style="font-size:11px;color:var(--g4);">Toyota Corolla · 42.300 km</div></div><span class="pill pill-g">Livre</span></div>
-      <div style="padding:12px;display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">🚗</span><div style="flex:1;"><div style="font-size:13px;font-weight:700;">Apoio02 — HPA-9012</div><div style="font-size:11px;color:var(--g4);">Chevrolet Spin · 61.700 km</div></div><span class="pill pill-a">Em corrida</span></div>
-    </div>
-    <div class="f-row"><div class="f-grp"><label class="f-lbl">ID</label><input class="f-in" placeholder="Ex: Apoio 03"/></div><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel"><option>Ambulância</option><option>Carro de apoio</option></select></div></div>
-    <div class="f-row"><div class="f-grp"><label class="f-lbl">Placa</label><input class="f-in" placeholder="HPA-0000"/></div><div class="f-grp"><label class="f-lbl">Hodômetro</label><input class="f-in" type="number" placeholder="km"/></div></div>
-    <div class="f-grp"><label class="f-lbl">Modelo</label><input class="f-in" placeholder="Marca e modelo"/></div>
-    <button class="btn" onclick="closeSheet('sh-veiculos');toast('Veículo cadastrado!')"><i class="ti ti-plus"></i> Cadastrar</button>
+    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;" id="veiculos-list"></div>
+    <div class="f-row"><div class="f-grp"><label class="f-lbl">ID</label><input class="f-in" id="new-vei-id" placeholder="Ex: Apoio 03"/></div><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel" id="new-vei-tipo"><option>Ambulância</option><option>Carro de apoio</option></select></div></div>
+    <div class="f-row"><div class="f-grp"><label class="f-lbl">Placa</label><input class="f-in" id="new-vei-placa" placeholder="HPA-0000"/></div><div class="f-grp"><label class="f-lbl">Hodômetro (km)</label><input class="f-in" id="new-vei-hod" type="number" placeholder="0"/></div></div>
+    <div class="f-grp"><label class="f-lbl">Modelo</label><input class="f-in" id="new-vei-modelo" placeholder="Marca e modelo"/></div>
+    <button class="btn" onclick="addVeiculo()"><i class="ti ti-plus"></i> Cadastrar no banco</button>
   </div></div>
 </div>
 
-<!-- DESTINOS -->
 <div class="sh-bg" id="sh-destinos" onclick="closeBg(event,'sh-destinos')">
   <div class="sheet"><div class="sh-hd"><h3>Destinos</h3><button class="sh-x" onclick="closeSheet('sh-destinos')"><i class="ti ti-x"></i></button></div>
   <div class="sh-body">
-    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;" id="dest-cadastros"></div>
+    <div style="background:var(--g2);border-radius:10px;margin-bottom:12px;overflow:hidden;" id="destinos-list"></div>
     <div class="f-grp"><label class="f-lbl">Nome do local</label><input class="f-in" id="new-dest-name" placeholder="Ex: UTI Neonatal"/></div>
-    <div class="f-row"><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel" id="new-dest-tipo"><option>Interno</option><option>Externo</option></select></div><div class="f-grp"><label class="f-lbl">Distância (km)</label><input class="f-in" type="number" id="new-dest-km" placeholder="0.0"/></div></div>
-    <div class="f-grp"><label class="f-lbl">Endereço (externo)</label><input class="f-in" id="new-dest-addr" placeholder="Endereço completo"/></div>
-    <button class="btn" onclick="addDestino()"><i class="ti ti-plus"></i> Cadastrar destino</button>
+    <div class="f-row"><div class="f-grp"><label class="f-lbl">Tipo</label><select class="f-sel" id="new-dest-tipo"><option>Interno</option><option>Externo</option></select></div><div class="f-grp"><label class="f-lbl">Distância (km)</label><input class="f-in" id="new-dest-km" type="number" placeholder="0.0"/></div></div>
+    <div class="f-grp"><label class="f-lbl">Endereço (para externos)</label><input class="f-in" id="new-dest-addr" placeholder="Endereço completo"/></div>
+    <button class="btn" onclick="addDestino()"><i class="ti ti-plus"></i> Salvar no banco</button>
   </div></div>
+</div>
+
+<div class="sh-bg" id="sh-recibo" onclick="closeBg(event,'sh-recibo')">
+  <div class="sheet"><div class="sh-hd"><h3>Recibo da corrida</h3><button class="sh-x" onclick="closeSheet('sh-recibo')"><i class="ti ti-x"></i></button></div>
+  <div class="sh-body">
+    <div style="text-align:center;padding:16px 0;"><div style="font-size:32px;font-weight:800;color:var(--green);" id="rec-v">R$ 1,44</div><div style="font-size:13px;color:var(--g4);margin-top:4px;" id="rec-d">Hoje</div></div>
+    <div style="background:var(--g2);border-radius:10px;padding:13px;margin-bottom:12px;" id="rec-route"></div>
+    <div style="background:var(--g2);border-radius:10px;padding:13px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g3);font-size:13px;"><span>Distância</span><span id="rec-km">—</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g3);font-size:13px;"><span>Tempo</span><span id="rec-tempo">—</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g3);font-size:13px;"><span>Motorista</span><span>João Rodrigues</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g3);font-size:13px;"><span>Hodômetro inicial</span><span id="rec-hod-i">85.000 km</span></div>
+      <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:13px;"><span>Hodômetro final</span><span id="rec-hod-f">—</span></div>
+    </div>
+    <button class="btn" onclick="toast('Recibo compartilhado! ✓')"><i class="ti ti-share"></i> Compartilhar recibo</button>
+  </div></div>
+</div>
+
+<!-- INCOMING -->
+<div class="inc-ov" id="inc-ov">
+  <div class="inc-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:18px;font-weight:800;">Nova corrida 🔔</div>
+      <span class="pill pill-r">URGENTE</span>
+    </div>
+    <div style="background:var(--g2);border-radius:10px;padding:12px;margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--g4);margin-bottom:8px;display:flex;justify-content:space-between;"><span>Ambulância</span><span>0,6 km de você</span></div>
+      <div style="font-size:13px;margin-bottom:3px;">📍 <b>Pronto-socorro</b></div>
+      <div style="font-size:13px;color:var(--g4);margin-left:20px;margin-bottom:3px;">↓</div>
+      <div style="font-size:13px;">📍 <b>UTI Adulto — Bloco C</b></div>
+    </div>
+    <div class="req-timer" style="margin-bottom:14px;"><div class="req-fill"></div></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-out" style="margin:0;flex:1;" onclick="closeInc(false)">Recusar</button>
+      <button class="btn" style="margin:0;flex:2;" onclick="closeInc(true)">Aceitar corrida</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast-bar"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  POSTGRESQL + POSTGIS — Simulação client-side
+//  Em produção: substitua por chamadas REST para seu backend
+//  Ex: fetch('/api/destinations'), fetch('/api/drivers'), etc.
+// ══════════════════════════════════════════════════════════
+const DB = {
+  // Simula tabela: destinations (PostGIS POINT geometry)
+  destinations: [
+    {id:1, name:'UTI Adulto — Bloco C', category:'Interno', floor:'2º andar', dist_km:0.3, lat:-1.3554, lng:-48.4248, geom:'POINT(-48.4248 -1.3554)'},
+    {id:2, name:'Exames — Bloco B', category:'Interno', floor:'Térreo', dist_km:0.5, lat:-1.3558, lng:-48.4252, geom:'POINT(-48.4252 -1.3558)'},
+    {id:3, name:'Centro Cirúrgico', category:'Interno', floor:'3º andar', dist_km:0.4, lat:-1.3549, lng:-48.4239, geom:'POINT(-48.4239 -1.3549)'},
+    {id:4, name:'Maternidade', category:'Interno', floor:'1º andar', dist_km:0.2, lat:-1.3553, lng:-48.4241, geom:'POINT(-48.4241 -1.3553)'},
+    {id:5, name:'UTI Neonatal', category:'Interno', floor:'2º andar', dist_km:0.3, lat:-1.3556, lng:-48.4245, geom:'POINT(-48.4245 -1.3556)'},
+    {id:6, name:'Farmácia', category:'Interno', floor:'Térreo', dist_km:0.1, lat:-1.3552, lng:-48.4240, geom:'POINT(-48.4240 -1.3552)'},
+    {id:7, name:'Portaria Principal', category:'Interno', floor:'Térreo', dist_km:0.1, lat:-1.3550, lng:-48.4238, geom:'POINT(-48.4238 -1.3550)'},
+    {id:8, name:'UEPA — Unidade Externa', category:'Externo', address:'Trav. Perebebuí, 2623', dist_km:4.2, lat:-1.3640, lng:-48.4510, geom:'POINT(-48.4510 -1.3640)'},
+    {id:9, name:'Hospital Beneficente', category:'Externo', address:'Av. Nazaré, 864', dist_km:8.7, lat:-1.4502, lng:-48.4768, geom:'POINT(-48.4768 -1.4502)'},
+    {id:10, name:'UPA Bengui', category:'Externo', address:'Bengui, Belém', dist_km:6.1, lat:-1.3221, lng:-48.4910, geom:'POINT(-48.4910 -1.3221)'},
+    {id:11, name:'Pronto-socorro', category:'Interno', floor:'Térreo', dist_km:0.1, lat:-1.3551, lng:-48.4244, geom:'POINT(-48.4244 -1.3551)'},
+    {id:12, name:'Almoxarifado', category:'Interno', floor:'Subsolo', dist_km:0.2, lat:-1.3555, lng:-48.4243, geom:'POINT(-48.4243 -1.3555)'},
+  ],
+  // Simula tabela: drivers
+  drivers: [
+    {id:1, name:'João Rodrigues', cnh:'12345678900', category:'D', vehicle_id:1, shift:'Matutino', status:'online', rating:4.9, trips_today:18},
+    {id:2, name:'Marcos Santana', cnh:'98765432100', category:'D', vehicle_id:2, shift:'Vespertino', status:'available', rating:4.8, trips_today:12},
+    {id:3, name:'Thiago Ferreira', cnh:'11122233344', category:'B', vehicle_id:3, shift:'Noturno', status:'offline', rating:4.7, trips_today:0},
+  ],
+  // Simula tabela: vehicles
+  vehicles: [
+    {id:1, name:'Ambulância 01', plate:'HPA-1234', type:'Ambulância', model:'Renault Master', year:2021, odometer:85000, status:'em corrida'},
+    {id:2, name:'Apoio 01', plate:'HPA-5678', type:'Carro de apoio', model:'Toyota Corolla', year:2020, odometer:42300, status:'disponível'},
+    {id:3, name:'Apoio 02', plate:'HPA-9012', type:'Carro de apoio', model:'Chevrolet Spin', year:2022, odometer:61700, status:'em corrida'},
+  ],
+  // Simula tabela: trips (com PostGIS route geometry)
+  trips: [
+    {id:1, date:'Hoje, 09:14', origin:'Maternidade', dest:'Exames Bloco B', driver:'João R.', vehicle:'Amb.01', dist_km:1.8, duration_min:8, odometer_start:85000, odometer_end:85002, cost:1.44, status:'concluída', route_geom:'LINESTRING(...)'},
+    {id:2, date:'Hoje, 08:02', origin:'PS', dest:'UTI Adulto', driver:'Marcos S.', vehicle:'Apoio02', dist_km:0.6, duration_min:3, odometer_start:61700, odometer_end:61701, cost:0.48, status:'concluída', route_geom:'LINESTRING(...)'},
+    {id:3, date:'Ontem, 17:42', origin:'UTI Neo', dest:'Exames', driver:'Marcos S.', vehicle:'Apoio02', dist_km:0, duration_min:0, cost:0, status:'cancelada', route_geom:null},
+    {id:4, date:'Ontem, 14:15', origin:'Ambulatório', dest:'Portaria', driver:'João R.', vehicle:'Amb.01', dist_km:2.1, duration_min:10, odometer_start:84997, odometer_end:85000, cost:1.68, status:'concluída', route_geom:'LINESTRING(...)'},
+  ],
+
+  // PostGIS ST_DWithin simulado — busca destinos por raio
+  stDWithin(lat, lng, radiusKm){
+    return this.destinations.filter(d=>{
+      const dlat=d.lat-lat, dlng=d.lng-lng;
+      const dist=Math.sqrt(dlat*dlat+dlng*dlng)*111;
+      return dist<=radiusKm;
+    });
+  },
+  // ST_Distance simulado
+  stDistance(lat1,lng1,lat2,lng2){
+    const R=6371;
+    const dLat=(lat2-lat1)*Math.PI/180;
+    const dLon=(lng2-lng1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  },
+  // INSERT simulado
+  insert(table, record){ this[table].push({id:this[table].length+1,...record}); return record; },
+};
+
+// Simula conexão com PostgreSQL
+setTimeout(()=>{
+  const badge=document.getElementById('db-badge');
+  const status=document.getElementById('db-status');
+  badge.classList.add('ok');
+  status.textContent='PostgreSQL · Conectado';
+  console.log('PostgreSQL + PostGIS: Conectado');
+  console.log('Tabelas: destinations, drivers, vehicles, trips');
+  console.log('Extensão PostGIS: ST_DWithin, ST_Distance, ST_MakeLine ativas');
+}, 1200);
+
+// ══════════════════════════════════════════════════════════
 //  STATE
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 const ORIGIN = [-1.3551, -48.4243];
-let currentRole = 'pass'; // pass | drv | ges | adm
-let currentUser = {name:'Administrador', mat:'HMPá-0042', role:'Administrador'};
-let selSvcVal = 'amb', selVtypeVal = 'amb';
-let selDest = null, routeLayer = null, destMarker = null, userMarker = null, userCircle = null;
-let stopCount = 0, searchTimer = null, driverOnline = true, currentRating = 5;
-let prevScr = 'scr-home';
-let tripData = {};
-let notifList = [
-  {icon:'🚑', title:'Corrida concluída', sub:'Maternidade → Exames B · há 42 min'},
-  {icon:'⚠️', title:'Nova solicitação urgente', sub:'PS → UTI Adulto · há 5 min'},
-  {icon:'⛽', title:'Amb.01 precisa de abastecimento', sub:'Nível de combustível baixo'},
-  {icon:'⭐', title:'Nova avaliação recebida', sub:'João Rodrigues recebeu ★★★★★'},
-];
+let currentRole='pass', currentUser={}, selSvcVal='amb', selVtypeVal='amb';
+let selDest=null, routeLayer=null, destMarker=null, userMarker=null, userCircle=null;
+let stopCount=0, searchTimer=null, driverOnline=true, currentRating=5;
+let prevScr='scr-home', tripData={};
+let userPos=null; // {lat, lng} do GPS
 
-const DESTS = [
-  {name:'UTI Adulto — Bloco C', sub:'Interno · 2º andar', dist:'0,3 km', lat:-1.3554, lng:-48.4248},
-  {name:'Exames — Bloco B', sub:'Interno · Térreo', dist:'0,5 km', lat:-1.3558, lng:-48.4252},
-  {name:'Centro Cirúrgico', sub:'Interno · 3º andar', dist:'0,4 km', lat:-1.3549, lng:-48.4239},
-  {name:'Maternidade', sub:'Interno · 1º andar', dist:'0,2 km', lat:-1.3553, lng:-48.4241},
-  {name:'UTI Neonatal', sub:'Interno · 2º andar', dist:'0,3 km', lat:-1.3556, lng:-48.4245},
-  {name:'Farmácia', sub:'Interno · Térreo', dist:'0,1 km', lat:-1.3552, lng:-48.4240},
-  {name:'Portaria Principal', sub:'Interno · Térreo', dist:'0,1 km', lat:-1.3550, lng:-48.4238},
-  {name:'UEPA — Unidade Externa', sub:'Externo · Trav. Perebebuí', dist:'4,2 km', lat:-1.3640, lng:-48.4510},
-  {name:'Hospital Beneficente', sub:'Externo · Av. Nazaré', dist:'8,7 km', lat:-1.4502, lng:-48.4768},
-  {name:'UPA Bengui', sub:'Externo · Bengui', dist:'6,1 km', lat:-1.3221, lng:-48.4910},
-];
-
-const ACTIVITIES = [
-  {date:'Hoje, 09:14', route:'Maternidade → Exames Bloco B', sub:'Amb.01 · João R. · 1,8 km', hod:'85.000 → 85.002', custo:'R$ 1,44', ok:true},
-  {date:'Hoje, 08:02', route:'PS → UTI Adulto', sub:'Apoio02 · Marcos S. · 0,6 km', hod:'61.700 → 61.701', custo:'R$ 0,48', ok:true},
-  {date:'Ontem, 17:42', route:'UTI Neo → Exames', sub:'Apoio02 · Marcos S.', hod:'—', custo:'—', ok:false},
-  {date:'Ontem, 14:15', route:'Ambulatório → Portaria', sub:'Amb.01 · João R. · 2,1 km', hod:'84.997 → 85.000', custo:'R$ 1,68', ok:true},
-  {date:'13/06, 10:30', route:'Recepção → Centro Cirúrgico', sub:'Amb.01 · João R. · 0,4 km', hod:'84.996 → 84.997', custo:'R$ 0,32', ok:true},
-];
-
-// ══════════════════════════════════════════════
-//  MAP INIT
-// ══════════════════════════════════════════════
-// Try Google Places if available
-setTimeout(initPlaces, 1500);
-
+// ══════════════════════════════════════════════════════════
+//  MAP — Leaflet + OpenStreetMap
+// ══════════════════════════════════════════════════════════
 const map = L.map('map',{zoomControl:false,attributionControl:false}).setView(ORIGIN,16);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
 
-const hospitalIcon = L.divIcon({html:'<div style="width:18px;height:18px;background:#06C167;border-radius:50%;border:3px solid #000;box-shadow:0 2px 8px rgba(0,0,0,.6);"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
-L.marker(ORIGIN,{icon:hospitalIcon}).addTo(map);
+const hospitalIcon=L.divIcon({html:'<div style="width:18px;height:18px;background:#06C167;border-radius:50%;border:3px solid #000;box-shadow:0 2px 8px rgba(0,0,0,.6);"></div>',iconSize:[18,18],iconAnchor:[9,9],className:''});
+L.marker(ORIGIN,{icon:hospitalIcon}).addTo(map).bindPopup('<b>Hospital da Mulher do Pará</b>');
 
-const ambIcon = L.divIcon({html:'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">🚑</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
-const carIcon = L.divIcon({html:'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">🚗</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
-L.marker([-1.3535,-48.4210],{icon:ambIcon}).addTo(map);
-L.marker([-1.3568,-48.4265],{icon:carIcon}).addTo(map);
-L.marker([-1.3560,-48.4198],{icon:carIcon}).addTo(map);
+const ambIcon=L.divIcon({html:'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">🚑</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
+const carIcon=L.divIcon({html:'<div style="font-size:20px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));">🚗</div>',iconSize:[24,24],iconAnchor:[12,12],className:''});
+[[-1.3535,-48.4210],[-1.3568,-48.4265],[-1.3560,-48.4198]].forEach((p,i)=>
+  L.marker(p,{icon:i===0?ambIcon:carIcon}).addTo(map)
+);
 
-// GPS
-const userIcon = L.divIcon({
-  html:`<div style="position:relative;width:22px;height:22px;">
-    <div style="position:absolute;inset:0;background:#276EF1;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:2;"></div>
-    <div style="position:absolute;inset:-8px;background:rgba(39,110,241,0.2);border-radius:50%;animation:gps-pulse 2s ease-out infinite;"></div>
-  </div>`,iconSize:[22,22],iconAnchor:[11,11],className:''
-});
+// GPS — Leaflet + HTML5 Geolocation
+const userIcon=L.divIcon({html:`<div style="position:relative;width:22px;height:22px;"><div style="position:absolute;inset:0;background:#276EF1;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:2;"></div><div style="position:absolute;inset:-8px;background:rgba(39,110,241,.2);border-radius:50%;animation:gps-pulse 2s ease-out infinite;"></div></div>`,iconSize:[22,22],iconAnchor:[11,11],className:''});
 
 function startGPS(){
   if(!navigator.geolocation){toast('GPS não disponível.');return;}
   navigator.geolocation.watchPosition(pos=>{
     const ll=[pos.coords.latitude,pos.coords.longitude];
+    userPos={lat:pos.coords.latitude,lng:pos.coords.longitude};
     if(!userMarker){
       userMarker=L.marker(ll,{icon:userIcon,zIndexOffset:1000}).addTo(map);
       userCircle=L.circle(ll,{radius:pos.coords.accuracy||30,color:'#276EF1',fillColor:'#276EF1',fillOpacity:.12,weight:1}).addTo(map);
@@ -755,23 +756,248 @@ function startGPS(){
       userCircle.setLatLng(ll);
       userCircle.setRadius(pos.coords.accuracy||30);
     }
-    // Salva para usar no Places bias e cálculo de distância
-    if(window.google&&google.maps){
-      userLatLng=new google.maps.LatLng(pos.coords.latitude,pos.coords.longitude);
-    } else {
-      userLatLng={lat:()=>pos.coords.latitude,lng:()=>pos.coords.longitude};
-    }
-  },err=>console.warn(err.message),{enableHighAccuracy:true,maximumAge:5000,timeout:10000});
+  },e=>console.warn('GPS:',e.message),{enableHighAccuracy:true,maximumAge:5000,timeout:10000});
 }
 
 function centerOnUser(){
-  if(userMarker){map.setView(userMarker.getLatLng(),16);}
-  else{toast('Aguardando sinal GPS…');startGPS();}
+  if(userMarker) map.setView(userMarker.getLatLng(),16);
+  else{toast('Aguardando GPS…');startGPS();}
 }
 
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  NOMINATIM — Search igual Google Places
+//  Docs: https://nominatim.org/release-docs/develop/api/Search/
+// ══════════════════════════════════════════════════════════
+function onDestIn(v){
+  clearTimeout(searchTimer);
+  const loading=document.getElementById('sr-loading');
+  const body=document.getElementById('sr-body');
+  if(!v||!v.trim()){
+    renderLocalDests('');
+    loading.style.display='none';
+    return;
+  }
+  // Filtra destinos locais do banco instantaneamente
+  renderLocalDests(v);
+  loading.style.display='block';
+  // Debounce 400ms — chama Nominatim
+  searchTimer=setTimeout(()=>searchNominatim(v.trim()),400);
+}
+
+async function searchNominatim(q){
+  const loading=document.getElementById('sr-loading');
+  const body=document.getElementById('sr-body');
+  try{
+    // Nominatim Geocoding API — sem chave, open source
+    // Bias para Belém com viewbox mas sem restrição (permite mundo inteiro com fallback)
+    const belemBox='-49.5,-2.5,-47.0,-0.5';
+    const url=`https://nominatim.openstreetmap.org/search?`+
+      `q=${encodeURIComponent(q)}`+
+      `&format=jsonv2`+
+      `&addressdetails=1`+
+      `&extratags=1`+
+      `&limit=8`+
+      `&accept-language=pt-BR,pt`+
+      `&viewbox=${belemBox}`+
+      `&bounded=0`; // 0 = não restrito, apenas usa viewbox como bias
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-BR'}});
+    const data=await r.json();
+    loading.style.display='none';
+    if(!data.length){
+      // Segunda tentativa sem viewbox (busca mundial)
+      searchNominatimGlobal(q);
+      return;
+    }
+    renderNominatimResults(data,q);
+  }catch(e){
+    loading.style.display='none';
+    console.error('Nominatim:',e);
+  }
+}
+
+async function searchNominatimGlobal(q){
+  const loading=document.getElementById('sr-loading');
+  loading.style.display='block';
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?`+
+      `q=${encodeURIComponent(q)}`+
+      `&format=jsonv2`+
+      `&addressdetails=1`+
+      `&limit=6`+
+      `&accept-language=pt-BR,pt`;
+    const r=await fetch(url,{headers:{'Accept-Language':'pt-BR'}});
+    const data=await r.json();
+    loading.style.display='none';
+    if(!data.length){
+      document.getElementById('sr-body').innerHTML+=
+        `<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado para "${q}"</div>`;
+      return;
+    }
+    renderNominatimResults(data,q,true);
+  }catch(e){loading.style.display='none';}
+}
+
+function renderNominatimResults(data,q,isGlobal=false){
+  const body=document.getElementById('sr-body');
+  // Separa: próximos a Belém vs outros
+  const nearby=[], others=[];
+  data.forEach(p=>{
+    const dist=DB.stDistance(ORIGIN[0],ORIGIN[1],parseFloat(p.lat),parseFloat(p.lon));
+    p._dist=dist;
+    if(dist<50) nearby.push(p); else others.push(p);
+  });
+
+  function getIcon(p){
+    const cls=p.class||'', type=p.type||'';
+    if(cls==='amenity'&&['hospital','clinic','doctors','pharmacy'].includes(type)) return {ic:'ti-building-hospital',cls:'hospital'};
+    if(cls==='highway'||type==='road'||type==='residential') return {ic:'ti-road',cls:'road'};
+    if(cls==='place'&&['city','town','village','suburb'].includes(type)) return {ic:'ti-building',cls:'city'};
+    if(cls==='place'&&type==='country') return {ic:'ti-world',cls:''};
+    if(cls==='amenity'&&['school','university','college'].includes(type)) return {ic:'ti-school',cls:''};
+    if(cls==='amenity'&&['restaurant','cafe','fast_food'].includes(type)) return {ic:'ti-tool-kitchen-2',cls:''};
+    if(cls==='shop') return {ic:'ti-shopping-cart',cls:''};
+    return {ic:'ti-map-pin',cls:''};
+  }
+
+  function highlight(text,q){
+    if(!q) return text;
+    const idx=text.toLowerCase().indexOf(q.toLowerCase());
+    if(idx<0) return text;
+    return text.slice(0,idx)+`<b>${text.slice(idx,idx+q.length)}</b>`+text.slice(idx+q.length);
+  }
+
+  function renderItem(p){
+    const addr=p.address||{};
+    const name=p.name||p.display_name.split(',')[0];
+    const parts=[
+      addr.road||(p.type==='road'?p.display_name.split(',')[0]:''),
+      addr.suburb||addr.neighbourhood||addr.district||'',
+      addr.city||addr.town||addr.village||'',
+      addr.state||'',
+      addr.country||''
+    ].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
+    const sub=parts.slice(0,3).join(', ');
+    const dist=p._dist<1?(p._dist*1000).toFixed(0)+' m':p._dist.toFixed(1)+' km';
+    const ico=getIcon(p);
+    const nameEsc=name.replace(/'/g,"\\'");
+    const subEsc=sub.replace(/'/g,"\\'");
+    return `<div class="sr-item" onclick="pickNominatimResult(${p.lat},${p.lon},'${nameEsc}','${subEsc}')">
+      <div class="sr-ic ${ico.cls}"><i class="ti ${ico.ic}"></i></div>
+      <div style="flex:1;min-width:0;">
+        <div class="sr-main">${highlight(name,q)}</div>
+        <div class="sr-sub">${sub||p.display_name.split(',').slice(1,3).join(',')}</div>
+      </div>
+      <div class="sr-dist">${dist}</div>
+    </div>`;
+  }
+
+  let html='';
+  if(nearby.length){
+    html+=`<div class="sr-section-lbl" style="color:var(--green);"><i class="ti ti-map-pin-filled" style="font-size:12px;"></i> Próximo a Belém</div>`;
+    html+=nearby.map(renderItem).join('');
+  }
+  if(others.length){
+    html+=`<div class="sr-section-lbl"><i class="ti ti-world" style="font-size:12px;"></i> Outros lugares</div>`;
+    html+=others.map(renderItem).join('');
+  }
+  html+=`<div class="sr-footer"><i class="ti ti-map"></i><span>Nominatim · OpenStreetMap</span></div>`;
+  body.innerHTML=html;
+  document.getElementById('dest-results').scrollTop=0;
+}
+
+function renderLocalDests(filter){
+  const body=document.getElementById('sr-body');
+  // Busca no banco local (PostgreSQL simulado)
+  const results=filter
+    ? DB.destinations.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase()))
+    : DB.destinations;
+
+  if(!results.length&&filter){body.innerHTML='';return;}
+  let html='';
+  if(results.length){
+    html+=`<div class="sr-section-lbl" style="color:var(--green);"><i class="ti ti-building-hospital" style="font-size:12px;"></i> Destinos do hospital</div>`;
+    html+=results.map(d=>{
+      const nameEsc=d.name.replace(/'/g,"\\'");
+      const sub=(d.floor?d.floor+' · ':'')+d.category;
+      return `<div class="sr-item" onclick="pickLocalDest(${d.id})">
+        <div class="sr-ic hospital"><i class="ti ti-building-hospital"></i></div>
+        <div style="flex:1;min-width:0;">
+          <div class="sr-main">${d.name}</div>
+          <div class="sr-sub">${sub}</div>
+        </div>
+        <div class="sr-dist">${d.dist_km} km</div>
+      </div>`;
+    }).join('');
+  }
+  body.innerHTML=html;
+}
+
+function pickLocalDest(id){
+  const d=DB.destinations.find(x=>x.id===id);
+  if(!d) return;
+  selDest={name:d.name,sub:d.floor||d.address||d.category,lat:d.lat,lng:d.lng,dist:d.dist_km+' km'};
+  document.getElementById('dest-input').value=d.name;
+  document.getElementById('vtype-sub').textContent='HMPá → '+d.name;
+  drawRoute(d.lat,d.lng,d.name);
+  gotoScr('scr-vtype');
+}
+
+function pickNominatimResult(lat,lon,name,sub){
+  selDest={name,sub,lat:parseFloat(lat),lng:parseFloat(lon),dist:'—'};
+  document.getElementById('dest-input').value=name;
+  document.getElementById('vtype-sub').textContent='HMPá → '+name;
+  drawRoute(parseFloat(lat),parseFloat(lon),name);
+  gotoScr('scr-vtype');
+}
+
+function clearDest(){
+  document.getElementById('dest-input').value='';
+  document.getElementById('dest-clear').style.display='none';
+  renderLocalDests('');
+  document.getElementById('sr-loading').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════════
+//  OSRM — Routing
+//  Docs: http://project-osrm.org/docs/v5.5.1/api/
+// ══════════════════════════════════════════════════════════
+async function drawRoute(lat,lng,name){
+  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+  if(destMarker){map.removeLayer(destMarker);destMarker=null;}
+  const dIcon=L.divIcon({html:'<div style="width:14px;height:14px;background:#fff;border-radius:50%;border:3px solid #000;box-shadow:0 2px 6px rgba(0,0,0,.5);"></div>',iconSize:[14,14],iconAnchor:[7,7],className:''});
+  destMarker=L.marker([lat,lng],{icon:dIcon}).addTo(map).bindPopup(`<b>${name}</b>`);
+  try{
+    // OSRM — Open Source Routing Machine
+    const url=`https://router.project-osrm.org/route/v1/driving/${ORIGIN[1]},${ORIGIN[0]};${lng},${lat}?overview=full&geometries=geojson&steps=false`;
+    const r=await fetch(url);
+    const data=await r.json();
+    if(data.code==='Ok'){
+      const route=data.routes[0];
+      const distKm=(route.distance/1000).toFixed(1);
+      const durMin=Math.round(route.duration/60);
+      routeLayer=L.geoJSON(route.geometry,{style:{color:'#06C167',weight:5,opacity:.9}}).addTo(map);
+      map.fitBounds(routeLayer.getBounds(),{paddingTopLeft:[20,80],paddingBottomRight:[20,300]});
+      // Atualiza UI
+      document.getElementById('km-amb').textContent=distKm+' km';
+      document.getElementById('km-apoio').textContent=distKm+' km';
+      document.getElementById('cf-km').textContent=distKm+' km';
+      document.getElementById('cf-eta').textContent=durMin+' min';
+      document.getElementById('cf-custo').textContent='R$'+(distKm*0.8).toFixed(2);
+      document.getElementById('cf-hod').textContent=(85000+parseFloat(distKm)).toFixed(1)+' km';
+      document.getElementById('eta-pill').textContent='🚑 Chegando em ~'+durMin+' min';
+      tripData={distKm,durMin,custo:'R$'+(distKm*0.8).toFixed(2),dest:name,hod:'85.000 → '+(85000+parseFloat(distKm)).toFixed(1)};
+      // Salva rota no banco (PostGIS ST_MakeLine)
+      console.log(`[PostGIS] INSERT INTO trips (route_geom) VALUES (ST_MakeLine(...))`);
+    }
+  }catch(e){
+    document.getElementById('km-amb').textContent=selDest?.dist||'—';
+    console.error('OSRM:',e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
 //  LOGIN
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 function selRole(r){
   currentRole=r;
   document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
@@ -783,69 +1009,120 @@ function doLogin(){
   const names={pass:'Ana Paula Souza',drv:'João Rodrigues',ges:'Fernanda Tavares',adm:'Administrador'};
   const roles={pass:'Solicitante',drv:'Motorista',ges:'Gestora',adm:'Administrador'};
   currentUser={name:names[currentRole],mat,role:roles[currentRole]};
-  document.getElementById('menu-av').textContent=currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('menu-av').textContent=currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2);
   document.getElementById('menu-name').textContent=currentUser.name;
   document.getElementById('menu-role').textContent=currentUser.role+' · '+mat;
-  buildMenu();
-  buildActivity();
-  buildDrvHistory();
-  buildNotifs();
-  buildDestList();
-  buildDestCadastros();
+  buildAll();
   startGPS();
   if(currentRole==='drv'){
-    document.getElementById('drv-panel-name').textContent=currentUser.name;
-    document.getElementById('bc').classList.remove('tall');
-    document.getElementById('bc').classList.add('short');
     gotoScr('scr-driver');
-    setTimeout(()=>showIncoming(),4000);
+    setTimeout(()=>document.getElementById('inc-ov').classList.add('open'),4000);
   } else {
     gotoScr('scr-home');
   }
   toast('Bem-vindo(a), '+currentUser.name.split(' ')[0]+'! 👋');
 }
 
-// ══════════════════════════════════════════════
-//  BUILD DYNAMIC LISTS
-// ══════════════════════════════════════════════
-function buildActivity(){
-  const el=document.getElementById('activity-list');
-  const dh=document.getElementById('drv-history');
-  const html=ACTIVITIES.map(a=>`
-    <div class="th-it" onclick="showRecibo('${a.route}','${a.custo}','${a.date}','${a.hod}')">
-      <div class="th-top"><span style="font-size:11px;color:var(--g4);">${a.date}</span><span style="font-size:11px;font-weight:700;color:${a.ok?'var(--green)':'var(--red)'};">${a.ok?'Concluída':'Cancelada'}</span></div>
-      <div class="th-rt">${a.route}</div>
-      <div class="th-sub">${a.sub}</div>
-      ${a.ok?`<div class="th-bot"><span style="color:var(--g4);">Hod: ${a.hod} km</span><span style="color:var(--green);font-weight:700;">${a.custo}</span></div>`:''}
-    </div>`).join('');
-  el.innerHTML=html;
-  dh.innerHTML=`<div class="sec-label" style="padding:0;margin-bottom:8px;">Hoje</div>`+html.slice(0,3*html.indexOf('</div>')+6)||html;
-  dh.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Histórico de hoje</div>`+ACTIVITIES.slice(0,3).map(a=>`
-    <div class="th-it"><div class="th-top"><span style="font-size:11px;color:var(--g4);">${a.date}</span><span style="font-size:11px;font-weight:700;color:${a.ok?'var(--green)':'var(--red)'};">${a.ok?'Concluída':'Cancelada'}</span></div><div class="th-rt">${a.route}</div><div class="th-sub">${a.sub}</div></div>`).join('');
+function doLogout(){gotoScr('scr-login');toast('Sessão encerrada.');}
+
+// ══════════════════════════════════════════════════════════
+//  BUILD UI FROM DB
+// ══════════════════════════════════════════════════════════
+function buildAll(){
+  buildHomeRecent();
+  buildDestinationsList();
+  buildActivity();
+  buildDriverHistory();
+  buildMenu();
+  buildNotifs();
+  buildMotoristasList();
+  buildVeiculosList();
+  buildDestinosList();
 }
 
-function buildDrvHistory(){buildActivity();}
+function buildHomeRecent(){
+  // PostGIS ST_DWithin — destinos próximos ao hospital
+  const nearby=DB.stDWithin(ORIGIN[0],ORIGIN[1],10);
+  document.getElementById('home-recent').innerHTML=nearby.slice(0,6).map(d=>`
+    <div class="ri" onclick="pickLocalDestFromHome(${d.id})">
+      <div class="ri-ic" style="background:#0a1a0f;"><i class="ti ti-building-hospital" style="color:var(--green);font-size:17px;"></i></div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${d.name}</div><div style="font-size:11px;color:var(--g4);">${d.floor||d.address||d.category}</div></div>
+      <span style="font-size:11px;color:var(--g4);">${d.dist_km} km</span>
+    </div>`).join('');
+}
+
+function pickLocalDestFromHome(id){
+  gotoScr('scr-dest');
+  setTimeout(()=>pickLocalDest(id),100);
+}
+
+function buildDestinationsList(){renderLocalDests('');}
+
+function buildActivity(){
+  const html=DB.trips.map(t=>`
+    <div class="th-it" onclick="showRecibo('${t.origin} → ${t.dest}','${t.cost?'R$ '+t.cost.toFixed(2):'—'}','${t.date}','${t.odometer_start||'—'} → ${t.odometer_end||'—'}')">
+      <div class="th-top"><span style="font-size:11px;color:var(--g4);">${t.date}</span><span style="font-size:11px;font-weight:700;color:${t.status==='concluída'?'var(--green)':'var(--red)'};">${t.status.charAt(0).toUpperCase()+t.status.slice(1)}</span></div>
+      <div class="th-rt">${t.origin} → ${t.dest}</div>
+      <div class="th-sub">${t.vehicle} · ${t.driver}${t.dist_km?' · '+t.dist_km+' km':''}</div>
+      ${t.status==='concluída'?`<div class="th-bot"><span style="color:var(--g4);">Hod: ${t.odometer_start} → ${t.odometer_end} km</span><span style="color:var(--green);font-weight:700;">R$ ${t.cost.toFixed(2)}</span></div>`:''}
+    </div>`).join('');
+  document.getElementById('activity-list').innerHTML=html;
+  document.getElementById('drv-hist').innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--g4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Histórico de hoje</div>`+
+    DB.trips.slice(0,2).map(t=>`<div class="th-it"><div class="th-top"><span style="font-size:11px;color:var(--g4);">${t.date}</span><span style="font-size:11px;font-weight:700;color:${t.status==='concluída'?'var(--green)':'var(--red)'};">${t.status}</span></div><div class="th-rt">${t.origin} → ${t.dest}</div><div class="th-sub">${t.vehicle} · ${t.dist_km||0} km</div></div>`).join('');
+}
+
+function buildDriverHistory(){buildActivity();}
 
 function buildNotifs(){
-  document.getElementById('notif-list').innerHTML=`<div style="background:var(--g2);border-radius:10px;overflow:hidden;">`+notifList.map((n,i)=>`
-    <div style="padding:12px;${i<notifList.length-1?'border-bottom:1px solid var(--g3);':''}display:flex;gap:10px;cursor:pointer;" onclick="markRead(${i})">
+  const notifs=[
+    {icon:'🚑',title:'Corrida concluída',sub:'Maternidade → Exames B · há 42 min'},
+    {icon:'⚠️',title:'Nova solicitação urgente',sub:'PS → UTI Adulto · há 5 min'},
+    {icon:'⛽',title:'Amb.01 — abastecimento necessário',sub:'Nível de combustível baixo'},
+    {icon:'⭐',title:'Nova avaliação recebida',sub:'João Rodrigues: ★★★★★'},
+  ];
+  document.getElementById('notif-list').innerHTML=`<div style="background:var(--g2);border-radius:10px;overflow:hidden;">`+
+    notifs.map((n,i)=>`<div style="padding:13px;${i<notifs.length-1?'border-bottom:1px solid var(--g3);':''}display:flex;gap:10px;cursor:pointer;">
       <span style="font-size:20px;">${n.icon}</span>
       <div><div style="font-size:13px;font-weight:700;">${n.title}</div><div style="font-size:11px;color:var(--g4);margin-top:1px;">${n.sub}</div></div>
     </div>`).join('')+`</div>`;
 }
 
-function markRead(i){notifList.splice(i,1);buildNotifs();if(!notifList.length){document.getElementById('notif-list').innerHTML='<div style="text-align:center;padding:20px;color:var(--g4);">Nenhuma notificação</div>';}}
+function buildMotoristasList(){
+  document.getElementById('motoristas-list').innerHTML=DB.drivers.map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;${i<DB.drivers.length-1?'border-bottom:1px solid var(--g3);':''}">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">${d.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${d.name}</div><div style="font-size:11px;color:var(--g4);">CNH-${d.category} · ★${d.rating}</div></div>
+      <span class="pill ${d.status==='online'?'pill-g':d.status==='available'?'pill-g':'pill-a'}">${d.status}</span>
+    </div>`).join('');
+}
+
+function buildVeiculosList(){
+  document.getElementById('veiculos-list').innerHTML=DB.vehicles.map((v,i)=>`
+    <div style="padding:12px;${i<DB.vehicles.length-1?'border-bottom:1px solid var(--g3);':''}display:flex;align-items:center;gap:10px;">
+      <span style="font-size:22px;">${v.type==='Ambulância'?'🚑':'🚗'}</span>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">${v.name} — ${v.plate}</div><div style="font-size:11px;color:var(--g4);">${v.model} · ${v.odometer.toLocaleString()} km</div></div>
+      <span class="pill ${v.status==='disponível'?'pill-g':'pill-a'}">${v.status}</span>
+    </div>`).join('');
+}
+
+function buildDestinosList(){
+  document.getElementById('destinos-list').innerHTML=DB.destinations.slice(0,5).map((d,i)=>`
+    <div style="display:flex;justify-content:space-between;padding:10px 13px;${i<4?'border-bottom:1px solid var(--g3);':''}font-size:12px;">
+      <span>${d.name}</span><span style="color:var(--g4);">${d.dist_km} km</span>
+    </div>`).join('');
+}
 
 function buildMenu(){
   const isAdm=currentRole==='adm'||currentRole==='ges';
   const items=[
     {icon:'ti-building-hospital',label:'Empresa',sub:'Dados do HMPá',action:"openSheet('sh-empresa')",show:isAdm},
-    {icon:'ti-steering-wheel',label:'Motoristas',sub:'Cadastro e gestão',action:"openSheet('sh-motoristas')",show:isAdm},
-    {icon:'ti-car',label:'Veículos',sub:'Frota e hodômetros',action:"openSheet('sh-veiculos')",show:isAdm},
-    {icon:'ti-map-pin',label:'Destinos',sub:'Pontos cadastrados',action:"openSheet('sh-destinos')",show:true},
+    {icon:'ti-steering-wheel',label:'Motoristas',sub:`${DB.drivers.length} cadastrados`,action:"openSheet('sh-motoristas')",show:isAdm},
+    {icon:'ti-car',label:'Veículos',sub:`${DB.vehicles.length} na frota`,action:"openSheet('sh-veiculos')",show:isAdm},
+    {icon:'ti-map-pin',label:'Destinos',sub:`${DB.destinations.length} cadastrados`,action:"openSheet('sh-destinos')",show:true},
     {icon:'ti-chart-bar',label:'Relatório financeiro',sub:'Custos e km do mês',action:"openSheet('sh-relatorio')",show:isAdm},
     {icon:'ti-ambulance',label:'Form. Ambulância',sub:'Registro de transporte clínico',action:"toast('Formulário de Ambulância!')",show:true},
     {icon:'ti-car-suv',label:'Form. Carro de apoio',sub:'Registro de transporte de apoio',action:"toast('Formulário de Carro de apoio!')",show:true},
+    {icon:'ti-database',label:'Banco de dados',sub:'PostgreSQL + PostGIS · Conectado',action:"toast('PostgreSQL + PostGIS: 4 tabelas, '+DB.trips.length+' viagens registradas')",show:isAdm},
     {icon:'ti-logout',label:'Sair',sub:'Trocar perfil',action:"doLogout()",show:true},
   ];
   document.getElementById('menu-items').innerHTML=items.filter(i=>i.show).map(i=>`
@@ -856,314 +1133,50 @@ function buildMenu(){
     </div>`).join('');
 }
 
-function doLogout(){gotoScr('scr-login');toast('Sessão encerrada.');}
-
-function buildDestList(filter=''){
-  const list=filter?DESTS.filter(d=>d.name.toLowerCase().includes(filter.toLowerCase())):DESTS;
-  const el=document.getElementById('dest-list');
-  el.innerHTML=list.map(d=>`
-    <div class="ac-item" data-local="1" onclick="pickDest('${d.name}')">
-      <div class="ac-ic" style="background:#0a2a1a;"><i class="ti ti-building-hospital" style="color:var(--green);"></i></div>
-      <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name}</div><div style="font-size:11px;color:var(--g4);">${d.sub} · ${d.dist}</div></div>
-    </div>`).join('')
-  +`<div class="ac-item" style="color:var(--g4);font-size:12px;justify-content:center;border:none;opacity:.6;"><i class="ti ti-search" style="margin-right:6px;"></i>ou busque qualquer endereço acima</div>`;
-  document.getElementById('home-recent').innerHTML=DESTS.slice(0,5).map(d=>`
-    <div class="ri" onclick="pickDest('${d.name}')">
-      <div class="ri-ic"><i class="ti ti-map-pin"></i></div>
-      <div style="flex:1;"><div class="ri-n">${d.name}</div><div class="ri-s">${d.sub}</div></div>
-      <span style="font-size:11px;color:var(--g4);">${d.dist}</span>
-    </div>`).join('');
+// ══════════════════════════════════════════════════════════
+//  CRUD — PostgreSQL (simulado)
+// ══════════════════════════════════════════════════════════
+function addMotorista(){
+  const name=document.getElementById('new-mot-name').value;
+  if(!name){toast('Informe o nome.');return;}
+  DB.insert('drivers',{name,cnh:document.getElementById('new-mot-cnh').value,category:document.getElementById('new-mot-cat').value,shift:document.getElementById('new-mot-turno').value,status:'offline',rating:0,trips_today:0});
+  buildMotoristasList();buildMenu();
+  document.getElementById('new-mot-name').value='';
+  document.getElementById('new-mot-cnh').value='';
+  closeSheet('sh-motoristas');
+  toast(`[DB] INSERT INTO drivers: ${name} ✓`);
 }
 
-function buildDestCadastros(){
-  document.getElementById('dest-cadastros').innerHTML=DESTS.slice(0,4).map((d,i)=>`
-    <div style="display:flex;justify-content:space-between;padding:10px 13px;${i<3?'border-bottom:1px solid var(--g3);':''}font-size:12px;">
-      <span>${d.name}</span><span style="color:var(--g4);">${d.dist}</span>
-    </div>`).join('');
+function addVeiculo(){
+  const id=document.getElementById('new-vei-id').value;
+  if(!id){toast('Informe a identificação.');return;}
+  DB.insert('vehicles',{name:id,plate:document.getElementById('new-vei-placa').value,type:document.getElementById('new-vei-tipo').value,model:document.getElementById('new-vei-modelo').value,year:new Date().getFullYear(),odometer:parseInt(document.getElementById('new-vei-hod').value)||0,status:'disponível'});
+  buildVeiculosList();buildMenu();
+  closeSheet('sh-veiculos');
+  toast(`[DB] INSERT INTO vehicles: ${id} ✓`);
 }
 
 function addDestino(){
   const name=document.getElementById('new-dest-name').value;
-  if(!name){toast('Informe o nome do local.');return;}
-  const km=document.getElementById('new-dest-km').value||'0';
-  DESTS.push({name,sub:document.getElementById('new-dest-tipo').value,dist:km+' km',lat:ORIGIN[0],lng:ORIGIN[1]});
-  buildDestList();buildDestCadastros();
+  if(!name){toast('Informe o nome.');return;}
+  const km=parseFloat(document.getElementById('new-dest-km').value)||0;
+  DB.insert('destinations',{name,category:document.getElementById('new-dest-tipo').value,address:document.getElementById('new-dest-addr').value,dist_km:km,lat:ORIGIN[0],lng:ORIGIN[1],geom:`POINT(${ORIGIN[1]} ${ORIGIN[0]})`});
+  buildDestinosList();buildHomeRecent();buildMenu();
   document.getElementById('new-dest-name').value='';
-  closeSheet('sh-destinos');toast('Destino "'+name+'" cadastrado!');
+  closeSheet('sh-destinos');
+  toast(`[PostGIS] INSERT INTO destinations: ${name} ✓`);
 }
 
-// ══════════════════════════════════════════════
-//  DEST / ROUTE
-// ══════════════════════════════════════════════
-const GKEY='AIzaSyA3pvM7opCbIRvJBRuVYDNGpNLOb8gv4Og';
-const GEOKEY='6d913107894a4225848c23500e0f9b56';
-let acService=null, placesService=null, sessionToken=null;
-let userLatLng=null; // atualizado pelo GPS
-
-function initPlaces(){
-  if(window.google&&google.maps&&google.maps.places){
-    acService=new google.maps.places.AutocompleteService();
-    const d=document.createElement('div');
-    document.body.appendChild(d);
-    placesService=new google.maps.places.PlacesService(d);
-    sessionToken=new google.maps.places.AutocompleteSessionToken();
-    console.log('Google Places OK');
-  }
-}
-
-function onDestIn(v){
-  clearTimeout(searchTimer);
-  const loading=document.getElementById('ac-loading');
-  const el=document.getElementById('dest-list');
-  if(!v||!v.trim()){
-    buildDestList('');
-    document.getElementById('dest-label').textContent='Destinos frequentes';
-    loading.style.display='none';
-    return;
-  }
-  // Mostra destinos internos do hospital que batem
-  buildDestList(v);
-  document.getElementById('dest-label').textContent='Resultados';
-  loading.style.display='block';
-  searchTimer=setTimeout(()=>doSearch(v.trim()), 350);
-}
-
-function doSearch(q){
-  if(acService&&sessionToken){
-    searchGooglePlaces(q);
-  } else {
-    // Tenta inicializar e usa Geoapify enquanto isso
-    initPlaces();
-    searchGeoapify(q);
-  }
-}
-
-function searchGooglePlaces(q){
-  const loading=document.getElementById('ac-loading');
-  const req={
-    input: q,
-    sessionToken,
-    language: 'pt-BR',
-  };
-  // Adiciona bias por localização se tivermos GPS
-  if(userLatLng){
-    req.location=userLatLng;
-    req.radius=50000; // 50km bias mas não restringe
-  }
-  acService.getPlacePredictions(req,(preds,status)=>{
-    loading.style.display='none';
-    if(status===google.maps.places.PlacesServiceStatus.OK&&preds&&preds.length){
-      renderGoogleResults(preds);
-    } else {
-      // Fallback Geoapify
-      searchGeoapify(q);
-    }
-  });
-}
-
-function renderGoogleResults(preds){
-  const el=document.getElementById('dest-list');
-  // Mantém destinos internos do hospital
-  const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
-  let html=localItems.map(e=>e.outerHTML).join('');
-
-  preds.forEach(p=>{
-    const main=p.structured_formatting.main_text;
-    const sec=p.structured_formatting.secondary_text||'';
-    const pid=p.place_id;
-    const dist=p.distance_meters?formatDist(p.distance_meters):'';
-
-    // Negrito nas letras que batem — igual Uber
-    let mainHtml=main;
-    const matches=p.structured_formatting.main_text_matched_substrings||[];
-    if(matches.length){
-      let res='',last=0;
-      [...matches].sort((a,b)=>a.offset-b.offset).forEach(m=>{
-        res+=escHtml(main.slice(last,m.offset));
-        res+=`<b style="color:#fff;font-weight:700;">`+escHtml(main.slice(m.offset,m.offset+m.length))+`</b>`;
-        last=m.offset+m.length;
-      });
-      res+=escHtml(main.slice(last));
-      mainHtml=res;
-    }
-
-    const pidEsc=pid.replace(/'/g,"\\'");
-    const mainEsc=main.replace(/'/g,"\\'");
-    const secEsc=sec.replace(/'/g,"\\'");
-
-    // Ícone por tipo
-    const types=p.types||[];
-    const icon=types.some(t=>['hospital','health','doctor','pharmacy'].includes(t))?'ti-building-hospital':
-               types.some(t=>['route','street_address'].includes(t))?'ti-road':
-               types.some(t=>['locality','administrative_area_level_2'].includes(t))?'ti-building':
-               types.some(t=>['country'].includes(t))?'ti-world':
-               types.some(t=>['establishment','point_of_interest'].includes(t))?'ti-map-pin-star':
-               'ti-map-pin';
-
-    html+=`<div class="ac-item" style="padding:12px 14px;" onclick="pickGooglePlace('${pidEsc}','${mainEsc}','${secEsc}')">
-      <div style="width:38px;height:38px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="ti ${icon}" style="font-size:16px;color:var(--g4);"></i>
-      </div>
-      <div style="flex:1;min-width:0;margin-left:12px;">
-        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;">${mainHtml}</div>
-        <div style="font-size:12px;color:var(--g4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dist?dist+' · ':''}${sec}</div>
-      </div>
-    </div>
-    <div style="height:1px;background:var(--g2);margin:0 14px;"></div>`;
-  });
-
-  // Logo Google no final
-  html+=`<div style="padding:8px 14px;display:flex;align-items:center;gap:6px;opacity:.4;">
-    <span style="font-size:10px;color:var(--g4);">Resultados do</span>
-    <i class="ti ti-brand-google" style="font-size:12px;color:var(--g4);"></i>
-    <span style="font-size:10px;color:var(--g4);">Google</span>
-  </div>`;
-
-  el.innerHTML=html;
-  el.scrollTop=0;
-}
-
-function formatDist(m){
-  return m<1000?Math.round(m)+' m':(m/1000).toFixed(1)+' km';
-}
-function escHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function pickGooglePlace(placeId,name,address){
-  const loading=document.getElementById('ac-loading');
-  loading.style.display='block';
-  if(!placesService){
-    const d=document.createElement('div');
-    document.body.appendChild(d);
-    placesService=new google.maps.places.PlacesService(d);
-  }
-  placesService.getDetails({
-    placeId,
-    fields:['geometry','name','formatted_address'],
-    sessionToken
-  },(place,status)=>{
-    loading.style.display='none';
-    sessionToken=new google.maps.places.AutocompleteSessionToken();
-    if(status===google.maps.places.PlacesServiceStatus.OK&&place&&place.geometry){
-      const lat=place.geometry.location.lat();
-      const lng=place.geometry.location.lng();
-      selDest={name:place.name||name,sub:place.formatted_address||address,lat,lng,dist:'—'};
-      document.getElementById('dest-input').value=place.name||name;
-      document.getElementById('vtype-sub').textContent='HMPá → '+(place.name||name);
-      drawRoute(lat,lng,place.name||name);
-      gotoScr('scr-vtype');
-    } else {
-      toast('Não foi possível obter localização. Tente outro endereço.');
-    }
-  });
-}
-
-async function searchGeoapify(q){
-  const loading=document.getElementById('ac-loading');
-  const el=document.getElementById('dest-list');
-  try{
-    const bias=userLatLng?`&bias=proximity:${userLatLng.lng()},${userLatLng.lat()}|countrycode:auto`:'&bias=proximity:-48.5039,-1.4558';
-    const url=`https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(q)}&lang=pt&limit=6${bias}&apiKey=${GEOKEY}`;
-    const r=await fetch(url);
-    const data=await r.json();
-    loading.style.display='none';
-    if(!data.features||!data.features.length){
-      const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
-      el.innerHTML=localItems.map(e=>e.outerHTML).join('')+'<div style="padding:20px;text-align:center;color:var(--g4);font-size:13px;">Nenhum resultado para "'+q+'"</div>';
-      return;
-    }
-    const localItems=[...el.querySelectorAll('.ac-item[data-local]')];
-    let html=localItems.map(e=>e.outerHTML).join('');
-    data.features.forEach(f=>{
-      const p=f.properties;
-      const [lon,lat]=f.geometry.coordinates;
-      const name=p.name||p.address_line1||p.street||q;
-      const addr=[p.address_line2,p.city||p.town,p.state,p.country].filter(Boolean).join(', ');
-      const dist=userLatLng?formatDist(calcDist(userLatLng.lat(),userLatLng.lng(),lat,lon)):'';
-      const nameEsc=name.replace(/'/g,"\\'");
-      const addrEsc=addr.replace(/'/g,"\\'");
-      const icon=p.result_type==='amenity'?'ti-map-pin-star':p.result_type==='street'?'ti-road':p.result_type==='city'?'ti-building':'ti-map-pin';
-      html+=`<div class="ac-item" style="padding:12px 14px;" onclick="pickSearchResult(${lat},${lon},'${nameEsc}','${addrEsc}')">
-        <div style="width:38px;height:38px;border-radius:50%;background:var(--g3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ${icon}" style="font-size:16px;color:var(--g4);"></i>
-        </div>
-        <div style="flex:1;min-width:0;margin-left:12px;">
-          <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
-          <div style="font-size:12px;color:var(--g4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dist?dist+' · ':''}${addr}</div>
-        </div>
-      </div>
-      <div style="height:1px;background:var(--g2);margin:0 14px;"></div>`;
-    });
-    el.innerHTML=html;
-    el.scrollTop=0;
-  }catch(e){loading.style.display='none';console.error(e);}
-}
-
-function calcDist(lat1,lon1,lat2,lon2){
-  const R=6371000;
-  const dLat=(lat2-lat1)*Math.PI/180;
-  const dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function pickSearchResult(lat,lon,name,sub){
-  selDest={name,sub:sub||'',lat:parseFloat(lat),lng:parseFloat(lon),dist:'—'};
-  document.getElementById('dest-input').value=name;
-  document.getElementById('vtype-sub').textContent='HMPá → '+name;
-  drawRoute(selDest.lat,selDest.lng,name);
-  gotoScr('scr-vtype');
-}
-
-function pickDest(name){
-  const d=DESTS.find(x=>x.name===name);
-  if(!d)return;
-  selDest=d;
-  document.getElementById('dest-input').value=name;
-  document.getElementById('vtype-sub').textContent='HMPá → '+name;
-  drawRoute(d.lat,d.lng,name);
-  gotoScr('scr-vtype');
-}
-
-async function drawRoute(lat,lng,name){
-  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
-  if(destMarker){map.removeLayer(destMarker);destMarker=null;}
-  const dIcon=L.divIcon({html:'<div style="width:14px;height:14px;background:#fff;border-radius:50%;border:3px solid #000;box-shadow:0 2px 6px rgba(0,0,0,.5);"></div>',iconSize:[14,14],iconAnchor:[7,7],className:''});
-  destMarker=L.marker([lat,lng],{icon:dIcon}).addTo(map);
-  try{
-    const r=await fetch(`https://router.project-osrm.org/route/v1/driving/${ORIGIN[1]},${ORIGIN[0]};${lng},${lat}?overview=full&geometries=geojson`);
-    const data=await r.json();
-    if(data.code==='Ok'){
-      const route=data.routes[0];
-      const distKm=(route.distance/1000).toFixed(1);
-      const durMin=Math.round(route.duration/60);
-      routeLayer=L.geoJSON(route.geometry,{style:{color:'#06C167',weight:5,opacity:.9}}).addTo(map);
-      map.fitBounds(routeLayer.getBounds(),{paddingTopLeft:[20,80],paddingBottomRight:[20,300]});
-      document.getElementById('km-amb').textContent=distKm+' km';
-      document.getElementById('km-apoio').textContent=distKm+' km';
-      document.getElementById('cf-km').textContent=distKm+' km';
-      document.getElementById('cf-eta').textContent=durMin+' min';
-      document.getElementById('cf-custo').textContent='R$'+(distKm*0.8).toFixed(2);
-      document.getElementById('cf-hod').textContent=(85000+parseFloat(distKm)).toFixed(1)+' km';
-      document.getElementById('eta-pill').textContent='🚑 Chegando em ~'+durMin+' min';
-      tripData={distKm,durMin,custo:'R$'+(distKm*0.8).toFixed(2),dest:name,hod:'85.000 → '+(85000+parseFloat(distKm)).toFixed(1)};
-    }
-  }catch(e){document.getElementById('km-amb').textContent=selDest.dist||'—';}
-}
-
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 //  RIDE FLOW
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
 function confirmRide(){
   gotoScr('scr-confirm');
   setTimeout(()=>{
     document.getElementById('conf-st').textContent='Motorista encontrado!';
     document.getElementById('conf-sub').textContent='João Rodrigues está a caminho';
-    document.getElementById('conf-spinner').style.display='none';
+    document.getElementById('conf-spin').style.display='none';
     document.getElementById('drv-preview').style.opacity='1';
-    // Add to notif
-    notifList.unshift({icon:'🚗',title:'Motorista alocado',sub:'João Rodrigues · Amb.01 · a caminho'});
     setTimeout(()=>{gotoScr('scr-riding');document.getElementById('eta-pill').style.display='block';},2500);
   },3000);
 }
@@ -1181,119 +1194,63 @@ function finishRide(){
   if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
   if(destMarker){map.removeLayer(destMarker);destMarker=null;}
   map.setView(ORIGIN,16);
-  // Update recibo
-  document.getElementById('rec-custo').textContent=tripData.custo||'R$ 1,44';
-  document.getElementById('rec-total').textContent=tripData.custo||'R$ 1,44';
-  document.getElementById('rec-km').textContent=(tripData.distKm||'1,8')+' km';
-  document.getElementById('rec-tempo').textContent=(tripData.durMin||8)+' min';
-  document.getElementById('rec-hod-f').textContent=(85000+parseFloat(tripData.distKm||1.8)).toFixed(1)+' km';
+  // Salva no banco
+  DB.insert('trips',{date:'Agora',origin:'HMPá',dest:tripData.dest||'Destino',driver:'João Rodrigues',vehicle:'Amb.01',dist_km:parseFloat(tripData.distKm||0),duration_min:tripData.durMin||0,odometer_start:85000,odometer_end:85000+parseFloat(tripData.distKm||0),cost:parseFloat((tripData.distKm||0)*0.8),status:'concluída',route_geom:'LINESTRING(...)'});
   const t=parseInt(document.getElementById('earn-trips').textContent)+1;
   document.getElementById('earn-trips').textContent=t;
-  notifList.unshift({icon:'✅',title:'Corrida concluída',sub:(tripData.dest||'Destino')+' · '+tripData.custo});
+  console.log(`[PostGIS] INSERT INTO trips: ${tripData.dest}, ${tripData.distKm} km`);
   gotoScr('scr-rating');
 }
 
-// ══════════════════════════════════════════════
-//  RATING
-// ══════════════════════════════════════════════
-function rateStar(n){
-  currentRating=n;
-  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
-}
-function toggleTag(el){el.classList.toggle('sel');}
-function submitRating(){
-  const tags=[...document.querySelectorAll('.rtag.sel')].map(t=>t.textContent).join(', ');
-  toast('Avaliação enviada! ★'.repeat(currentRating)+(tags?' · '+tags:''));
-  gotoScr('scr-home');
+function showRecibo(route,custo,date,hod){
+  document.getElementById('rec-v').textContent=custo;
+  document.getElementById('rec-d').textContent=date;
+  document.getElementById('rec-route').innerHTML=`<div style="font-size:13px;font-weight:700;margin-bottom:4px;">📍 ${route.split('→')[0].trim()}</div><div style="font-size:12px;color:var(--g4);margin-left:16px;margin-bottom:4px;">↓</div><div style="font-size:13px;font-weight:700;">📍 ${route.split('→')[1]?.trim()}</div>`;
+  const hods=hod.split('→');
+  document.getElementById('rec-hod-i').textContent=(hods[0]?.trim()||'—')+' km';
+  document.getElementById('rec-hod-f').textContent=(hods[1]?.trim()||'—')+' km';
+  openSheet('sh-recibo');
 }
 
-// ══════════════════════════════════════════════
-//  CHAT
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+//  MISC
+// ══════════════════════════════════════════════════════════
+function rateStar(n){currentRating=n;document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
+function submitRating(){toast('Avaliação enviada! ★'.repeat(currentRating));gotoScr('scr-home');}
+
 function sendMsg(){
   const inp=document.getElementById('chat-in');
-  if(!inp.value.trim())return;
+  if(!inp.value.trim()) return;
   const msgs=document.getElementById('chat-msgs');
-  const now=new Date();
-  const time=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  const t=new Date(),time=t.getHours()+':'+String(t.getMinutes()).padStart(2,'0');
   msgs.innerHTML+=`<div class="msg me">${inp.value}<div class="msg-time">${time}</div></div>`;
-  inp.value='';
+  const v=inp.value;inp.value='';
   msgs.scrollTop=msgs.scrollHeight;
-  setTimeout(()=>{
-    msgs.innerHTML+=`<div class="msg other">Ok, entendido! Já estou chegando.<div class="msg-time">${time}</div></div>`;
-    msgs.scrollTop=msgs.scrollHeight;
-  },1500);
+  setTimeout(()=>{msgs.innerHTML+=`<div class="msg other">Ok! Já estou chegando.<div class="msg-time">${time}</div></div>`;msgs.scrollTop=msgs.scrollHeight;},1500);
 }
 
-function callDriver(){toast('📞 Ligando para o motorista…');}
-
-// ══════════════════════════════════════════════
-//  DRIVER
-// ══════════════════════════════════════════════
 function toggleOnline(){
   driverOnline=!driverOnline;
   document.getElementById('tog-btn').classList.toggle('on',driverOnline);
   document.getElementById('online-lbl').textContent=driverOnline?'Online':'Offline';
-  toast(driverOnline?'Você está online. Recebendo corridas.':'Você está offline.');
+  toast(driverOnline?'Você está online.':'Você está offline.');
 }
 
-function showIncoming(){document.getElementById('incoming-overlay').classList.add('open');}
-function closeIncoming(accept){
-  document.getElementById('incoming-overlay').classList.remove('open');
-  if(accept){
-    toast('Corrida aceita! Navegando até o solicitante.');
-    document.getElementById('req-card').innerHTML=`<div style="text-align:center;padding:6px 0;"><div style="font-size:14px;font-weight:800;color:var(--green);">Corrida aceita!</div><div style="font-size:11px;color:var(--g4);margin-top:2px;">PS → UTI Adulto · a caminho</div><div style="margin-top:10px;"><button class="btn" style="padding:10px;font-size:13px;" onclick="gotoScr('scr-chat')"><i class="ti ti-message"></i> Falar com solicitante</button></div></div>`;
-    const t=parseInt(document.getElementById('earn-trips').textContent)+1;
-    document.getElementById('earn-trips').textContent=t;
-  } else {
-    toast('Corrida recusada.');
-  }
+function acceptReq(){
+  document.getElementById('req-card').innerHTML=`<div style="text-align:center;padding:6px;"><div style="font-size:14px;font-weight:800;color:var(--green);">Corrida aceita!</div><div style="font-size:12px;color:var(--g4);margin-top:4px;">A caminho do solicitante</div><div style="margin-top:10px;"><button class="btn" style="padding:10px;font-size:13px;" onclick="gotoScr('scr-chat')"><i class="ti ti-message"></i> Falar com solicitante</button></div></div>`;
+  toast('Corrida aceita!');
 }
+function rejectReq(){document.getElementById('req-card').style.display='none';toast('Corrida recusada.');}
+function closeInc(accept){document.getElementById('inc-ov').classList.remove('open');if(accept)acceptReq();else rejectReq();}
 
-function acceptReq(){closeIncoming(true);}
-function rejectReq(){closeIncoming(false);}
-
-// ══════════════════════════════════════════════
-//  RECIBO
-// ══════════════════════════════════════════════
-function showRecibo(route,custo,date,hod){
-  document.getElementById('rec-custo').textContent=custo;
-  document.getElementById('rec-total').textContent=custo;
-  document.getElementById('rec-date').textContent=date;
-  document.getElementById('rec-route').innerHTML=`<div style="font-size:13px;font-weight:700;margin-bottom:4px;">📍 ${route.split('→')[0].trim()}</div><div style="font-size:13px;color:var(--g4);margin-left:16px;margin-bottom:4px;">↓</div><div style="font-size:13px;font-weight:700;">📍 ${route.split('→')[1].trim()}</div>`;
-  document.getElementById('rec-hod-i').textContent=hod.split('→')[0]?.trim()+' km'||'—';
-  document.getElementById('rec-hod-f').textContent=hod.split('→')[1]?.trim()+' km'||'—';
-  openSheet('sh-recibo');
-}
-
-// ══════════════════════════════════════════════
-//  NAVIGATION
-// ══════════════════════════════════════════════
-function gotoScr(id){
-  if(id!==currentId()) prevScr=currentId();
-  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const tall=['scr-login','scr-chat','scr-rating','scr-activity','scr-menu','scr-dest'];
-  document.getElementById('bc').className='bc '+(tall.includes(id)?'tall':'short');
-  document.getElementById('ftop').style.display=(['scr-login'].includes(id)?'none':'flex');
-  document.getElementById('gps-fab').style.display=(['scr-login'].includes(id)?'none':'flex');
-  setTimeout(()=>map.invalidateSize(),150);
-  if(id==='scr-dest'){
-    setTimeout(()=>{
-      const inp=document.getElementById('dest-input');
-      inp.focus();
-      // Re-trigger search if already has value
-      if(inp.value) onDestIn(inp.value);
-    },300);
-  }
-}
-
-function currentId(){return [...document.querySelectorAll('.scr')].find(s=>s.classList.contains('active'))?.id||'scr-home';}
-function goBack(){gotoScr(prevScr||'scr-home');}
-
-function setNav(btn,idx){
-  const nav=btn.closest('.bnav');
-  if(nav) nav.querySelectorAll('.bni').forEach((b,i)=>b.classList.toggle('on',i===idx));
+function addStop(){
+  if(stopCount>=2){toast('Máximo de 2 paradas.');return;}
+  stopCount++;
+  const wrap=document.getElementById('extra-stops');
+  const d=document.createElement('div');
+  d.style.marginBottom='6px';
+  d.innerHTML=`<div class="rp"><div class="rp-dot" style="background:var(--amber);border:none;"></div><input class="rp-in" placeholder="Parada ${stopCount}…"/></div><div style="width:2px;height:16px;background:var(--g3);margin:0 5px 6px;"></div>`;
+  wrap.appendChild(d);
 }
 
 function selSvc(el,v){document.querySelectorAll('.svc').forEach(s=>s.classList.remove('sel'));el.classList.add('sel');selSvcVal=v;}
@@ -1303,31 +1260,38 @@ function selVtype(el,t){
   document.getElementById('form-apoio').style.display=t==='apoio'?'block':'none';
 }
 
-function addStop(){
-  if(stopCount>=2){toast('Máximo de 2 paradas.');return;}
-  stopCount++;
-  const wrap=document.getElementById('extra-stops');
-  const d=document.createElement('div');
-  d.innerHTML=`<div style="margin-bottom:6px;"><div class="rp"><div class="rp-dot" style="background:var(--amber);"></div><input class="rp-in" placeholder="Parada ${stopCount}…"/></div></div><div class="rp-line"></div>`;
-  wrap.appendChild(d);
+function gotoScr(id){
+  if(id!==currentScrId()) prevScr=currentScrId();
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tall=['scr-login','scr-chat','scr-rating','scr-activity','scr-menu','scr-dest','scr-vtype'];
+  const bc=document.getElementById('bc');
+  bc.className='bc '+(tall.includes(id)?'tall':'short');
+  const gpsFab=document.getElementById('gps-fab');
+  const dbBadge=document.getElementById('db-badge');
+  const hideInLogin=['scr-login'].includes(id);
+  document.getElementById('ftop').style.display=hideInLogin?'none':'flex';
+  gpsFab.style.display=hideInLogin?'none':'flex';
+  dbBadge.style.display=hideInLogin?'none':'flex';
+  const h=tall.includes(id)?'88vh':'62vh';
+  gpsFab.style.bottom=`calc(${h} + 60px)`;
+  dbBadge.style.bottom=`calc(${h} + 8px)`;
+  if(id==='scr-dest'){
+    setTimeout(()=>{document.getElementById('dest-input').focus();renderLocalDests('');},300);
+  }
+  setTimeout(()=>map.invalidateSize(),150);
 }
 
-// ══════════════════════════════════════════════
-//  SHEETS / TOAST
-// ══════════════════════════════════════════════
+function currentScrId(){return [...document.querySelectorAll('.scr')].find(s=>s.classList.contains('active'))?.id||'scr-home';}
+function goBack(){gotoScr(prevScr||'scr-home');}
+function setNav(btn){const nav=btn.closest('.bnav');if(nav)nav.querySelectorAll('.bni').forEach(b=>b.classList.toggle('on',b===btn));}
 function openSheet(id){document.getElementById(id).classList.add('open');}
 function closeSheet(id){document.getElementById(id).classList.remove('open');}
 function closeBg(e,id){if(e.target===e.currentTarget)closeSheet(id);}
-
-function toast(msg){
-  const t=document.getElementById('toast-bar');
-  t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
+function toast(msg){const t=document.getElementById('toast-bar');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 // INIT
 gotoScr('scr-login');
 </script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA3pvM7opCbIRvJBRuVYDNGpNLOb8gv4Og&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>
