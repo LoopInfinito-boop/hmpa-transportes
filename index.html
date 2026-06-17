@@ -22,9 +22,9 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 #sidebar{width:220px;min-width:220px;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 /* LOGIN */
-#map-bg{position:fixed;inset:0;z-index:100;}
-#map-overlay{position:fixed;inset:0;z-index:101;background:linear-gradient(135deg,rgba(10,10,10,.78) 0%,rgba(10,10,10,.60) 100%);pointer-events:none;}
-#login-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:102;padding:20px;}
+#map-bg{position:fixed;inset:0;z-index:1;}
+#map-overlay{position:fixed;inset:0;z-index:2;background:linear-gradient(135deg,rgba(10,10,10,.78) 0%,rgba(10,10,10,.60) 100%);pointer-events:none;}
+#login-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;padding:20px;}
 .login-box{background:rgba(17,17,17,.90);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:36px;width:420px;max-width:100%;box-shadow:0 24px 64px rgba(0,0,0,.8);}
 .login-logo{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
 .login-logo span{color:var(--green);}
@@ -143,7 +143,7 @@ tbody tr:last-child td{border-bottom:none;}
 .ps-label{font-size:10px;color:var(--text2);}
 .prog-step.active .ps-label{color:var(--green);font-weight:700;}
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.open{display:flex;}
 .modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:700px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.8);}
 .modal-head{padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -158,7 +158,7 @@ tbody tr:last-child td{border-bottom:none;}
 .notif-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
 .notif-unreadsign{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px;}
 /* TOAST */
-.toast{position:fixed;top:18px;right:18px;z-index:999;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;font-size:13px;font-weight:600;color:var(--text);opacity:0;transform:translateY(-8px);transition:all .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;max-width:380px;}
+.toast{position:fixed;top:18px;right:18px;z-index:600;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;font-size:13px;font-weight:600;color:var(--text);opacity:0;transform:translateY(-8px);transition:all .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;max-width:380px;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.ok{border-color:rgba(6,193,103,.4);}
 .toast.err{border-color:rgba(209,41,61,.4);}
@@ -586,6 +586,8 @@ function doLogin(){
   if(!u){toast('Matrícula ou senha incorretos.','err');return;}
   currentUser=u;
   document.getElementById('login-page').style.display='none';
+  document.getElementById('map-bg').style.display='none';
+  document.getElementById('map-overlay').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('user-av').textContent=u.nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('user-name').textContent=u.nome;
@@ -598,6 +600,8 @@ function doLogin(){
 function doLogout(){
   currentUser=null;
   document.getElementById('app').style.display='none';
+  document.getElementById('map-bg').style.display='block';
+  document.getElementById('map-overlay').style.display='block';
   document.getElementById('login-page').style.display='flex';
   document.getElementById('login-mat').value='';
   document.getElementById('login-pw').value='';
