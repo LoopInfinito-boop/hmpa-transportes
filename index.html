@@ -582,6 +582,8 @@ function doLogin(){
   const mat=document.getElementById('login-mat').value.trim();
   const pw=document.getElementById('login-pw').value;
   if(!mat||!pw){toast('Preencha matrícula e senha.','err');return;}
+  // Recarrega banco do localStorage para pegar dados salvos por outros usuários
+  DB = loadDB();
   const u=DB.usuarios.find(x=>x.matricula===mat&&x.senha===pw);
   if(!u){toast('Matrícula ou senha incorretos.','err');return;}
   currentUser=u;
@@ -687,6 +689,7 @@ function openPage(id){
   const [t,s]=PAGE_TITLES[id]||[id,''];
   document.getElementById('topbar-title').textContent=t;
   document.getElementById('topbar-sub').textContent=s;
+  updateNotifDot();
   const fns={
     'dashboard':renderDashboard,'motorista':renderMotorista,
     'minhas-demandas':()=>renderMinhasDemandas(filterStatus),
@@ -701,6 +704,7 @@ function openPage(id){
 //  DASHBOARD
 // ═══════════════════════════════════════════
 function renderDashboard(){
+  DB = loadDB(); // Garante dados mais recentes
   const total=DB.demandas.length;
   const conc=DB.demandas.filter(d=>d.status==='concluida').length;
   const aguard=DB.demandas.filter(d=>d.status==='aguardando').length;
@@ -870,6 +874,7 @@ function submitDemanda(){
 //  PAINEL DO MOTORISTA
 // ═══════════════════════════════════════════
 function renderMotorista(){
+  DB = loadDB(); // Garante dados mais recentes
   const mot=DB.motoristas.find(m=>m.usuario_id===currentUser.id);
   const transp=DB.demandas.find(d=>d.status==='andamento'&&d.motorista_id===currentUser.id);
   const wrap=document.getElementById('transp-ativo-wrap');
@@ -993,6 +998,7 @@ function devolverFila(id){
 //  MINHAS SOLICITAÇÕES
 // ═══════════════════════════════════════════
 function renderMinhasDemandas(filter){
+  DB = loadDB(); // Garante dados mais recentes
   filterStatus=filter||'all';
   const isGestor=currentUser.perfil==='gestor';
   let list=isGestor?[...DB.demandas]:DB.demandas.filter(d=>d.solicitante_id===currentUser.id);
@@ -1167,6 +1173,7 @@ function delSetor(id){
 //  NOTIFICAÇÕES — clique abre detalhes
 // ═══════════════════════════════════════════
 function renderNotificacoes(){
+  DB = loadDB(); // Garante notificações mais recentes
   const notifs=DB.notificacoes.filter(n=>n.usuario_id===currentUser.id).reverse();
   const el=document.getElementById('notif-lista');
   if(!notifs.length){el.innerHTML='<div class="empty-state"><i class="ti ti-bell-off"></i><p>Nenhuma notificação</p></div>';return;}
