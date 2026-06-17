@@ -1,0 +1,236 @@
+<?php $pageTitle = 'Nova solicitação'; include VIEWS.'/layout/header.php'; ?>
+<div class="card">
+  <div class="card-title"><i class="ti ti-plus"></i> Nova solicitação de transporte</div>
+  <form method="POST" action="/demandas/nova" id="form-demanda">
+    <!-- STEPS -->
+    <div style="display:flex;gap:0;margin-bottom:24px;">
+      <?php foreach(['Tipo','Rota','Dados','Confirmar'] as $i=>$s): ?>
+        <div style="flex:1;text-align:center;position:relative;" id="sw<?= $i+1 ?>">
+          <?php if($i<3): ?><div style="position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;" id="sl<?= $i+1 ?>"></div><?php endif; ?>
+          <div id="sc<?= $i+1 ?>" style="width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;"><?= $i+1 ?></div>
+          <div id="stl<?= $i+1 ?>" style="font-size:10px;color:var(--text2);"><?= $s ?></div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- S1: TIPO -->
+    <div id="s1">
+      <div class="section-div">Tipo de transporte</div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="f-group"><label class="f-label">Tipo de veículo *</label>
+          <select class="f-select" name="tipo" id="tipo-veiculo" required onchange="toggleTipo()">
+            <option value="">Selecione…</option>
+            <option value="ambulancia">🚑 Ambulância — Transporte clínico</option>
+            <option value="apoio">🚗 Carro de apoio — Pessoal / Material</option>
+          </select>
+        </div>
+        <div class="f-group"><label class="f-label">Prioridade *</label>
+          <select class="f-select" name="prioridade">
+            <option value="normal">🟢 Normal</option>
+            <option value="urgente">🟡 Urgente</option>
+            <option value="emergencia">🔴 Emergência</option>
+          </select>
+        </div>
+      </div>
+      <div id="apoio-cat" style="display:none;">
+        <div class="section-div">Categoria do transporte de apoio</div>
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="f-group"><label class="f-label">Categoria *</label>
+            <select class="f-select" name="categoria_apoio">
+              <option value="">Selecione…</option>
+              <option value="funcionario">👤 Funcionário / Pessoal</option>
+              <option value="medicamento">💊 Medicamento / Insumo</option>
+              <option value="material">📦 Material / Equipamento</option>
+              <option value="documento">📄 Documento / Exame</option>
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Descrição geral *</label>
+            <input class="f-input" name="descricao_apoio" placeholder="O que será transportado?"/>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+        <button type="button" class="btn" onclick="goStep(2)"><i class="ti ti-arrow-right"></i> Próximo</button>
+      </div>
+    </div>
+
+    <!-- S2: ROTA -->
+    <div id="s2" style="display:none;">
+      <div class="section-div">Origem e destino</div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="f-group"><label class="f-label">Setor de origem *</label>
+          <select class="f-select" name="origem_id" id="sel-origem" required>
+            <option value="">Selecione o setor de origem…</option>
+            <optgroup label="Internos">
+              <?php foreach(array_filter($setores,fn($s)=>$s['tipo']==='interno') as $s): ?>
+                <option value="<?= $s['id'] ?>"><?= h($s['nome']) ?><?= $s['info']?' — '.h($s['info']):'' ?></option>
+              <?php endforeach; ?>
+            </optgroup>
+            <optgroup label="Externos">
+              <?php foreach(array_filter($setores,fn($s)=>$s['tipo']==='externo') as $s): ?>
+                <option value="<?= $s['id'] ?>"><?= h($s['nome']) ?><?= $s['info']?' — '.h($s['info']):'' ?></option>
+              <?php endforeach; ?>
+            </optgroup>
+          </select>
+        </div>
+        <div class="f-group"><label class="f-label">Setor de destino *</label>
+          <select class="f-select" name="destino_id" id="sel-destino" required>
+            <option value="">Selecione o setor de destino…</option>
+            <optgroup label="Internos">
+              <?php foreach(array_filter($setores,fn($s)=>$s['tipo']==='interno') as $s): ?>
+                <option value="<?= $s['id'] ?>"><?= h($s['nome']) ?><?= $s['info']?' — '.h($s['info']):'' ?></option>
+              <?php endforeach; ?>
+            </optgroup>
+            <optgroup label="Externos">
+              <?php foreach(array_filter($setores,fn($s)=>$s['tipo']==='externo') as $s): ?>
+                <option value="<?= $s['id'] ?>"><?= h($s['nome']) ?><?= $s['info']?' — '.h($s['info']):'' ?></option>
+              <?php endforeach; ?>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="f-group"><label class="f-label">Data / Hora agendada</label>
+          <input class="f-input" type="datetime-local" name="agendado_para"/>
+        </div>
+        <div class="f-group"><label class="f-label">Solicitante responsável *</label>
+          <input class="f-input" name="solicitante_nome" value="<?= h(Auth::nome()) ?>" required/>
+        </div>
+      </div>
+      <div class="f-group" style="margin-bottom:14px;"><label class="f-label">Observações para o motorista</label>
+        <textarea class="f-textarea" name="observacoes" rows="2" placeholder="Informações adicionais, acesso especial, equipamentos necessários…"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <button type="button" class="btn-outline" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> Voltar</button>
+        <button type="button" class="btn" onclick="goStep(3)"><i class="ti ti-arrow-right"></i> Próximo</button>
+      </div>
+    </div>
+
+    <!-- S3: DADOS ESPECÍFICOS -->
+    <div id="s3" style="display:none;">
+      <div id="form-amb" style="display:none;">
+        <div class="section-div"><i class="ti ti-ambulance" style="color:var(--red);"></i> Dados do paciente</div>
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="f-group"><label class="f-label">Nome completo *</label><input class="f-input" name="p_nome" placeholder="Nome do paciente"/></div>
+          <div class="f-group"><label class="f-label">Nº do prontuário *</label><input class="f-input" name="p_prontuario" placeholder="Ex: 2024001234"/></div>
+          <div class="f-group"><label class="f-label">CPF</label><input class="f-input" name="p_cpf" placeholder="000.000.000-00"/></div>
+          <div class="f-group"><label class="f-label">Data de nascimento</label><input class="f-input" type="date" name="p_nascimento"/></div>
+          <div class="f-group"><label class="f-label">Diagnóstico / CID</label><input class="f-input" name="p_cid" placeholder="Ex: O80 — Parto normal"/></div>
+          <div class="f-group"><label class="f-label">Médico responsável</label><input class="f-input" name="p_medico" placeholder="Dr(a). Nome"/></div>
+        </div>
+        <div class="form-grid-3" style="margin-bottom:14px;">
+          <div class="f-group"><label class="f-label">Estado clínico *</label>
+            <select class="f-select" name="p_estado">
+              <option value="estavel">🟢 Estável</option>
+              <option value="semi">🟡 Semi-estável</option>
+              <option value="grave">🟠 Grave</option>
+              <option value="critico">🔴 Crítico</option>
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Suporte necessário *</label>
+            <select class="f-select" name="p_suporte">
+              <option value="nenhum">Nenhum</option>
+              <option value="oxigenio">Oxigênio</option>
+              <option value="maca_soro">Maca + soro</option>
+              <option value="uti_movel">UTI móvel</option>
+            </select>
+          </div>
+          <div class="f-group"><label class="f-label">Acompanhante</label>
+            <select class="f-select" name="p_acompanhante">
+              <option value="nao">Não</option>
+              <option value="familiar">Familiar</option>
+              <option value="enfermeiro">Enfermeiro(a)</option>
+              <option value="medico">Médico(a)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="form-apoio-itens" style="display:none;">
+        <div class="section-div"><i class="ti ti-car-suv" style="color:var(--blue);"></i> Lista de itens transportados</div>
+        <div id="itens-lista">
+          <div class="apoio-item" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;">
+            <div class="f-group"><label class="f-label">Item / Descrição</label><input class="f-input" name="item_nome[]" placeholder="Ex: Medicamento X"/></div>
+            <div class="f-group"><label class="f-label">Quantidade</label><input class="f-input" name="item_qtde[]" placeholder="Ex: 2 caixas"/></div>
+            <div class="f-group"><label class="f-label">Setor de entrega</label><input class="f-input" name="item_setor[]" placeholder="Ex: UTI Neo"/></div>
+            <div class="f-group"><label class="f-label" style="opacity:0;">.</label><button type="button" class="btn btn-red btn-sm" onclick="remItem(this)"><i class="ti ti-trash"></i></button></div>
+          </div>
+        </div>
+        <button type="button" class="btn-outline btn-sm" onclick="addItem()"><i class="ti ti-plus"></i> Adicionar item</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        <button type="button" class="btn-outline" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> Voltar</button>
+        <button type="button" class="btn" onclick="goStep(4)"><i class="ti ti-eye"></i> Revisar</button>
+      </div>
+    </div>
+
+    <!-- S4: REVISÃO -->
+    <div id="s4" style="display:none;">
+      <div class="section-div">Revise antes de enviar</div>
+      <div id="review-box" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;font-size:13px;line-height:2;"></div>
+      <div style="display:flex;justify-content:space-between;">
+        <button type="button" class="btn-outline" onclick="goStep(3)"><i class="ti ti-arrow-left"></i> Voltar</button>
+        <button type="submit" class="btn"><i class="ti ti-send"></i> Enviar solicitação</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+let step=1;
+function setCircle(i,state){
+  const c=document.getElementById('sc'+i), l=document.getElementById('stl'+i), ln=document.getElementById('sl'+i);
+  if(state==='done'){c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--green);background:var(--green);color:#000;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';c.textContent='✓';if(ln)ln.style.background='var(--green)';}
+  else if(state==='active'){c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--green);background:var(--bg);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';c.textContent=i;l.style.color='var(--green)';l.style.fontWeight='700';}
+  else{c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:var(--bg);color:var(--text2);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';c.textContent=i;l.style.color='var(--text2)';l.style.fontWeight='400';}
+}
+function goStep(n){
+  if(n>step){
+    if(step===1&&!document.getElementById('tipo-veiculo').value){alert('Selecione o tipo de veículo.');return;}
+    if(step===2){
+      if(!document.getElementById('sel-origem').value){alert('Selecione a origem.');return;}
+      if(!document.getElementById('sel-destino').value){alert('Selecione o destino.');return;}
+      if(document.getElementById('sel-origem').value===document.getElementById('sel-destino').value){alert('Origem e destino não podem ser iguais.');return;}
+    }
+    if(n===4)buildReview();
+  }
+  document.getElementById('s'+step).style.display='none';
+  step=n;
+  document.getElementById('s'+step).style.display='block';
+  for(let i=1;i<=4;i++) setCircle(i,i<step?'done':i===step?'active':'pending');
+}
+function toggleTipo(){
+  const t=document.getElementById('tipo-veiculo').value;
+  document.getElementById('apoio-cat').style.display=t==='apoio'?'block':'none';
+  document.getElementById('form-amb').style.display=t==='ambulancia'?'block':'none';
+  document.getElementById('form-apoio-itens').style.display=t==='apoio'?'block':'none';
+}
+function buildReview(){
+  const t=document.getElementById('tipo-veiculo').value;
+  const orig=document.getElementById('sel-origem').selectedOptions[0]?.text||'—';
+  const dest=document.getElementById('sel-destino').selectedOptions[0]?.text||'—';
+  const pNome=document.querySelector('[name="p_nome"]')?.value||'—';
+  const pPront=document.querySelector('[name="p_prontuario"]')?.value||'—';
+  const pEstado=document.querySelector('[name="p_estado"]')?.value||'—';
+  const catApoio=document.querySelector('[name="categoria_apoio"]')?.value||'—';
+  const descApoio=document.querySelector('[name="descricao_apoio"]')?.value||'—';
+  document.getElementById('review-box').innerHTML=`
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="pill pill-gray">${t==='ambulancia'?'🚑 Ambulância':'🚗 Carro de apoio'}</span>
+    </div>
+    <div class="form-grid">
+      <div><b>Origem:</b><br/>${orig}</div>
+      <div><b>Destino:</b><br/>${dest}</div>
+      ${t==='ambulancia'?`<div><b>Paciente:</b><br/>${pNome}</div><div><b>Prontuário:</b><br/>${pPront}</div><div><b>Estado clínico:</b><br/>${pEstado}</div>`:''}
+      ${t==='apoio'?`<div><b>Categoria:</b><br/>${catApoio}</div><div><b>Descrição:</b><br/>${descApoio}</div>`:''}
+    </div>`;
+}
+function addItem(){
+  const l=document.getElementById('itens-lista');
+  const d=document.createElement('div');d.className='apoio-item';
+  d.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;';
+  d.innerHTML='<div class="f-group"><label class="f-label">Item</label><input class="f-input" name="item_nome[]" placeholder="Descrição"/></div><div class="f-group"><label class="f-label">Qtde</label><input class="f-input" name="item_qtde[]"/></div><div class="f-group"><label class="f-label">Setor</label><input class="f-input" name="item_setor[]"/></div><div class="f-group"><label class="f-label" style="opacity:0;">.</label><button type="button" class="btn btn-red btn-sm" onclick="remItem(this)"><i class="ti ti-trash"></i></button></div>';
+  l.appendChild(d);
+}
+function remItem(btn){btn.closest('.apoio-item').remove();}
+</script>
+<?php include VIEWS.'/layout/footer.php'; ?>
