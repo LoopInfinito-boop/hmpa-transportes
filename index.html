@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html = r"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
@@ -6,6 +6,7 @@
 <title>HMPá Transportes</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 :root{
   --green:#06C167;--gd:#048848;--red:#D1293D;--amber:#F5A623;--blue:#276EF1;
@@ -15,27 +16,25 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;}
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px;}
-
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:2px;}
 /* LAYOUT */
 #app{display:flex;height:100vh;}
 #sidebar{width:220px;min-width:220px;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 #main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-
 /* LOGIN */
-#login-page{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;}
-.login-box{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:36px;width:420px;max-width:95vw;}
+#map-bg{position:fixed;inset:0;z-index:100;}
+#map-overlay{position:fixed;inset:0;z-index:101;background:linear-gradient(135deg,rgba(10,10,10,.78) 0%,rgba(10,10,10,.60) 100%);pointer-events:none;}
+#login-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:102;padding:20px;}
+.login-box{background:rgba(17,17,17,.90);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:36px;width:420px;max-width:100%;box-shadow:0 24px 64px rgba(0,0,0,.8);}
 .login-logo{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;}
 .login-logo span{color:var(--green);}
 .login-desc{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.6;}
-.role-tabs{display:flex;background:var(--s2);border-radius:8px;padding:3px;margin-bottom:20px;gap:2px;}
+.role-tabs{display:flex;background:rgba(255,255,255,.05);border-radius:8px;padding:3px;margin-bottom:20px;gap:2px;}
 .role-tab{flex:1;padding:8px 4px;text-align:center;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all .15s;border:none;background:transparent;font-family:var(--font);}
-.role-tab.active{background:var(--s1);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4);}
-.hint-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:13px;margin-top:16px;font-size:12px;color:var(--text2);line-height:1.9;}
+.role-tab.active{background:rgba(255,255,255,.08);color:var(--text);}
+.hint-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:13px;margin-top:16px;font-size:12px;color:var(--text2);line-height:1.9;}
 .hint-box b{color:var(--text);}
 .hint-title{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:6px;}
-
 /* SIDEBAR */
 .sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
 .logo-text{font-size:20px;font-weight:900;letter-spacing:-.5px;}
@@ -49,30 +48,25 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center;}
 .sidebar-user{padding:14px 18px;border-top:1px solid var(--border);margin-top:auto;}
 .user-av{width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;flex-shrink:0;}
-
 /* TOPBAR */
 .topbar{height:54px;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;}
 .topbar-title{font-size:16px;font-weight:700;}
 .topbar-sub{font-size:12px;color:var(--text2);margin-top:2px;}
 .icon-btn{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--border);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:15px;transition:background .15s;position:relative;}
 .icon-btn:hover{background:var(--s3);}
-.icon-btn .dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--s1);}
-
+.notif-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--s1);display:none;}
 /* CONTENT */
 .content{flex:1;overflow-y:auto;padding:24px;}
 .page{display:none;}.page.active{display:block;}
-
 /* CARDS */
 .card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;}
 .card-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
 .card-title i{font-size:17px;color:var(--green);}
-
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .stat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
 .stat-val{font-size:28px;font-weight:800;line-height:1;}
 .stat-label{font-size:12px;color:var(--text2);margin-top:5px;}
-
 /* FORMS */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
@@ -83,17 +77,15 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .f-input:focus,.f-select:focus,.f-textarea:focus{border-color:var(--green);}
 .f-select{appearance:none;cursor:pointer;}
 .f-textarea{resize:none;}
-
+.f-input::placeholder,.f-textarea::placeholder{color:var(--muted);}
 /* BUTTONS */
 .btn{padding:11px 20px;background:var(--green);color:#000;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;font-family:var(--font);}
 .btn:hover{background:var(--gd);color:#fff;}
 .btn-outline{padding:10px 18px;background:transparent;color:var(--text);font-size:13px;font-weight:600;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s;font-family:var(--font);}
 .btn-outline:hover{background:var(--s3);}
 .btn-red{background:var(--red)!important;color:#fff!important;}
-.btn-amber{background:var(--amber)!important;color:#000!important;}
 .btn-sm{padding:7px 12px!important;font-size:12px!important;}
 .btn-full{width:100%;justify-content:center;}
-
 /* PILLS */
 .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
 .pill-green{background:rgba(6,193,103,.15);color:var(--green);}
@@ -101,12 +93,6 @@ html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--t
 .pill-amber{background:rgba(245,166,35,.15);color:var(--amber);}
 .pill-blue{background:rgba(39,110,241,.15);color:var(--blue);}
 .pill-gray{background:var(--s3);color:var(--text2);}
-
-/* ALERTS */
-.alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
-.alert-ok{background:rgba(6,193,103,.1);border:1px solid rgba(6,193,103,.3);color:var(--green);}
-.alert-err{background:rgba(209,41,61,.1);border:1px solid rgba(209,41,61,.3);color:var(--red);}
-
 /* TABLE */
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;}
@@ -114,39 +100,37 @@ thead th{font-size:11px;font-weight:700;color:var(--text2);text-transform:upperc
 tbody td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
 tbody tr:hover{background:var(--s2);}
 tbody tr:last-child td{border-bottom:none;}
-
+/* ALERTS */
+.alert-ok{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600;background:rgba(6,193,103,.1);border:1px solid rgba(6,193,103,.3);color:var(--green);display:flex;align-items:center;gap:8px;}
+.alert-err{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;font-weight:600;background:rgba(209,41,61,.1);border:1px solid rgba(209,41,61,.3);color:var(--red);display:flex;align-items:center;gap:8px;}
 /* SECTION DIV */
 .section-div{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:14px;}
-
 /* EMPTY STATE */
 .empty-state{text-align:center;padding:48px 20px;color:var(--muted);}
 .empty-state i{font-size:40px;display:block;margin-bottom:12px;opacity:.3;}
-
 /* GRID */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-
 /* DEMAND CARD */
-.demand-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;transition:border-color .15s;}
-.demand-card.urgent{border-left:3px solid var(--red);}
-.demand-card.normal-p{border-left:3px solid var(--blue);}
+.demand-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;}
+.demand-card.urgente{border-left:3px solid var(--red);}
+.demand-card.normal{border-left:3px solid var(--blue);}
 .dc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
 .dc-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
 .dc-field{background:var(--s3);border-radius:6px;padding:8px 10px;}
 .dc-field-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
 .dc-field-val{font-size:13px;font-weight:600;}
 .dc-actions{display:flex;gap:8px;}
-
-/* RIDE ACTIVE */
-.ride-active{background:var(--s2);border:2px solid var(--green);border-radius:var(--r);padding:18px;margin-bottom:16px;}
-.ride-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.ride-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;display:inline-block;}
-.ride-info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
-.rib{background:var(--s3);border-radius:8px;padding:10px;}
-.rib-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
-.rib-val{font-size:14px;font-weight:700;}
-.km-form{background:var(--s3);border-radius:var(--r);padding:16px;border:1px solid var(--border);}
-.km-form-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-
+/* TRANSPORTE ATIVO */
+.transp-ativo{background:var(--s2);border:2px solid var(--green);border-radius:var(--r);padding:18px;margin-bottom:16px;}
+.transp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.transp-titulo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--green);}
+.status-dot{width:10px;height:10px;border-radius:50%;background:var(--green);animation:blink 1.4s ease-in-out infinite;display:inline-block;}
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.info-box{background:var(--s3);border-radius:8px;padding:10px;}
+.info-box-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.info-box-val{font-size:13px;font-weight:700;}
+.hod-form{background:var(--s3);border-radius:var(--r);padding:16px;border:1px solid var(--border);}
+.hod-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 /* STEPS */
 .prog-steps{display:flex;margin-bottom:24px;}
 .prog-step{flex:1;text-align:center;position:relative;}
@@ -158,43 +142,56 @@ tbody tr:last-child td{border-bottom:none;}
 .prog-step.active .ps-circle{border-color:var(--green);color:var(--green);}
 .ps-label{font-size:10px;color:var(--text2);}
 .prog-step.active .ps-label{color:var(--green);font-weight:700;}
-
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.open{display:flex;}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:680px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:700px;max-width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.8);}
 .modal-head{padding:18px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
 .modal-head h3{font-size:16px;font-weight:700;}
 .modal-body{padding:20px;overflow-y:auto;flex:1;}
 .modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;}
 .modal-close{background:var(--s3);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;font-size:15px;}
-
+/* NOTIF CARD */
+.notif-card{display:flex;gap:12px;align-items:flex-start;padding:13px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border);}
+.notif-card:last-child{border-bottom:none;}
+.notif-card:hover{background:var(--s2);}
+.notif-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;}
+.notif-unreadsign{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px;}
 /* TOAST */
 .toast{position:fixed;top:18px;right:18px;z-index:999;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;font-size:13px;font-weight:600;color:var(--text);opacity:0;transform:translateY(-8px);transition:all .3s;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;max-width:380px;}
 .toast.show{opacity:1;transform:translateY(0);}
 .toast.ok{border-color:rgba(6,193,103,.4);}
 .toast.err{border-color:rgba(209,41,61,.4);}
-
+/* MAPA POPUP */
+.leaflet-popup-content-wrapper{background:rgba(17,17,17,.95)!important;border:1px solid rgba(6,193,103,.3)!important;border-radius:10px!important;box-shadow:0 8px 32px rgba(0,0,0,.7)!important;}
+.leaflet-popup-tip{background:rgba(17,17,17,.95)!important;}
+.leaflet-popup-close-button{color:#888!important;}
+.leaflet-popup-content{margin:10px 14px!important;font-family:'Inter',sans-serif!important;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-@keyframes slideUp{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.slide-up{animation:slideUp .25s ease;}
+@keyframes ping{0%,100%{box-shadow:0 0 0 0 rgba(6,193,103,.4),0 0 0 8px rgba(6,193,103,.15);}50%{box-shadow:0 0 0 8px rgba(6,193,103,.2),0 0 0 20px rgba(6,193,103,.05);}}
+@keyframes slideUp{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.slide-up{animation:slideUp .2s ease;}
 </style>
 </head>
 <body>
+
+<!-- MAPA DE FUNDO -->
+<div id="map-bg"></div>
+<div id="map-overlay"></div>
 
 <!-- LOGIN -->
 <div id="login-page">
   <div class="login-box">
     <div class="login-logo">HM<span>Pá</span></div>
     <div class="login-desc">Sistema de Transporte Hospitalar<br/>Hospital da Mulher do Pará — Belém/PA</div>
-    <div class="role-tabs" id="role-tabs">
+    <div class="role-tabs">
       <button class="role-tab active" onclick="setRole(this,'solicitante')"><i class="ti ti-user"></i> Solicitante</button>
       <button class="role-tab" onclick="setRole(this,'motorista')"><i class="ti ti-steering-wheel"></i> Motorista</button>
       <button class="role-tab" onclick="setRole(this,'gestor')"><i class="ti ti-chart-bar"></i> Gestor</button>
     </div>
     <div class="f-group" style="margin-bottom:12px;">
       <label class="f-label">Matrícula / Crachá</label>
-      <input class="f-input" id="login-mat" placeholder="Ex: HMPa-SOL01"/>
+      <input class="f-input" id="login-mat" placeholder="Ex: HMPa-SOL01" autocomplete="off"/>
     </div>
     <div class="f-group" style="margin-bottom:20px;">
       <label class="f-label">Senha</label>
@@ -213,8 +210,6 @@ tbody tr:last-child td{border-bottom:none;}
 
 <!-- APP -->
 <div id="app" style="display:none;">
-
-<!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sidebar-logo">
     <div class="logo-text">HM<span>Pá</span></div>
@@ -225,57 +220,48 @@ tbody tr:last-child td{border-bottom:none;}
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="user-av" id="user-av">A</div>
       <div>
-        <div style="font-size:13px;font-weight:600;" id="user-name">Usuário</div>
+        <div style="font-size:13px;font-weight:600;" id="user-name">—</div>
         <div style="font-size:11px;color:var(--muted);" id="user-role">—</div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- MAIN -->
 <div id="main">
   <div class="topbar">
     <div>
       <div class="topbar-title" id="topbar-title">Dashboard</div>
-      <div class="topbar-sub">Hospital da Mulher do Pará</div>
+      <div class="topbar-sub" id="topbar-sub">Hospital da Mulher do Pará</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="icon-btn" id="notif-btn" onclick="openPage('notificacoes')">
+      <button class="icon-btn" onclick="openPage('notificacoes')">
         <i class="ti ti-bell"></i>
-        <div class="dot" id="notif-dot" style="display:none;"></div>
+        <div class="notif-dot" id="notif-dot"></div>
       </button>
       <button class="icon-btn" onclick="doLogout()" title="Sair"><i class="ti ti-logout"></i></button>
     </div>
   </div>
-  <div class="content" id="content">
+  <div class="content">
 
     <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-row" id="dash-stats"></div>
       <div class="grid-2">
-        <div class="card">
-          <div class="card-title"><i class="ti ti-list-check"></i> Demandas recentes</div>
-          <div id="dash-recentes"></div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-clock"></i> Atividade recente</div>
-          <div id="dash-atividade"></div>
-        </div>
+        <div class="card"><div class="card-title"><i class="ti ti-list-check"></i> Solicitações recentes</div><div id="dash-recentes"></div></div>
+        <div class="card"><div class="card-title"><i class="ti ti-clock"></i> Atividade recente</div><div id="dash-atividade"></div></div>
       </div>
     </div>
 
-    <!-- NOVA DEMANDA -->
+    <!-- NOVA SOLICITAÇÃO -->
     <div class="page" id="page-nova-demanda">
       <div class="card">
         <div class="card-title"><i class="ti ti-plus"></i> Nova solicitação de transporte</div>
-        <!-- STEPS -->
-        <div class="prog-steps" id="nd-steps">
+        <div class="prog-steps">
           <div class="prog-step active" id="ndstep-1"><div class="ps-circle" id="ndsc-1">1</div><div class="ps-label" id="ndsl-1">Tipo</div></div>
           <div class="prog-step" id="ndstep-2"><div class="ps-circle" id="ndsc-2">2</div><div class="ps-label" id="ndsl-2">Rota</div></div>
           <div class="prog-step" id="ndstep-3"><div class="ps-circle" id="ndsc-3">3</div><div class="ps-label" id="ndsl-3">Dados</div></div>
           <div class="prog-step" id="ndstep-4"><div class="ps-circle" id="ndsc-4">4</div><div class="ps-label" id="ndsl-4">Confirmar</div></div>
         </div>
-        <!-- STEP 1 -->
+        <!-- S1 -->
         <div id="nds1">
           <div class="section-div">Tipo de transporte</div>
           <div class="form-grid" style="margin-bottom:14px;">
@@ -283,7 +269,7 @@ tbody tr:last-child td{border-bottom:none;}
               <select class="f-select" id="nd-tipo" onchange="toggleNdTipo()">
                 <option value="">Selecione...</option>
                 <option value="ambulancia">🚑 Ambulância — Transporte clínico</option>
-                <option value="apoio">🚗 Carro de apoio — Pessoal / Material</option>
+                <option value="apoio">🚗 Veículo de apoio — Pessoal / Material</option>
               </select>
             </div>
             <div class="f-group"><label class="f-label">Prioridade *</label>
@@ -294,8 +280,8 @@ tbody tr:last-child td{border-bottom:none;}
               </select>
             </div>
           </div>
-          <div id="nd-apoio-cat" style="display:none;">
-            <div class="form-grid" style="margin-bottom:14px;">
+          <div id="nd-apoio-cat" style="display:none;margin-bottom:14px;">
+            <div class="form-grid">
               <div class="f-group"><label class="f-label">Categoria *</label>
                 <select class="f-select" id="nd-categoria">
                   <option value="">Selecione...</option>
@@ -310,43 +296,32 @@ tbody tr:last-child td{border-bottom:none;}
               </div>
             </div>
           </div>
-          <div style="display:flex;justify-content:flex-end;">
-            <button class="btn" onclick="ndGoStep(2)"><i class="ti ti-arrow-right"></i> Próximo</button>
-          </div>
+          <div style="display:flex;justify-content:flex-end;"><button class="btn" onclick="ndGoStep(2)"><i class="ti ti-arrow-right"></i> Próximo</button></div>
         </div>
-        <!-- STEP 2 -->
+        <!-- S2 -->
         <div id="nds2" style="display:none;">
-          <div class="section-div">Origem e destino</div>
+          <div class="section-div">Local de origem e destino</div>
           <div class="form-grid" style="margin-bottom:14px;">
-            <div class="f-group"><label class="f-label">Setor de origem *</label>
-              <select class="f-select" id="nd-origem"></select>
-            </div>
-            <div class="f-group"><label class="f-label">Setor de destino *</label>
-              <select class="f-select" id="nd-destino"></select>
-            </div>
+            <div class="f-group"><label class="f-label">Setor / Local de origem *</label><select class="f-select" id="nd-origem"></select></div>
+            <div class="f-group"><label class="f-label">Setor / Local de destino *</label><select class="f-select" id="nd-destino"></select></div>
           </div>
           <div class="form-grid" style="margin-bottom:14px;">
-            <div class="f-group"><label class="f-label">Data / Hora</label>
-              <input class="f-input" type="datetime-local" id="nd-datetime"/>
-            </div>
-            <div class="f-group"><label class="f-label">Solicitante responsável *</label>
-              <input class="f-input" id="nd-solicitante"/>
-            </div>
+            <div class="f-group"><label class="f-label">Data / Hora prevista</label><input class="f-input" type="datetime-local" id="nd-datetime"/></div>
+            <div class="f-group"><label class="f-label">Responsável pela solicitação *</label><input class="f-input" id="nd-solicitante"/></div>
           </div>
           <div class="f-group" style="margin-bottom:14px;">
             <label class="f-label">Observações para o motorista</label>
-            <textarea class="f-textarea" id="nd-obs" rows="2" placeholder="Informações adicionais..."></textarea>
+            <textarea class="f-textarea" id="nd-obs" rows="2" placeholder="Informações adicionais, equipamentos necessários..."></textarea>
           </div>
           <div style="display:flex;justify-content:space-between;">
             <button class="btn-outline" onclick="ndGoStep(1)"><i class="ti ti-arrow-left"></i> Voltar</button>
             <button class="btn" onclick="ndGoStep(3)"><i class="ti ti-arrow-right"></i> Próximo</button>
           </div>
         </div>
-        <!-- STEP 3 -->
+        <!-- S3 -->
         <div id="nds3" style="display:none;">
-          <!-- Ambulância -->
-          <div id="nd-form-amb">
-            <div class="section-div"><i class="ti ti-ambulance" style="color:var(--red);"></i> Dados do paciente</div>
+          <div id="nd-form-amb" style="display:none;">
+            <div class="section-div"><i class="ti ti-ambulance" style="color:var(--red);margin-right:4px;"></i> Dados do paciente</div>
             <div class="form-grid" style="margin-bottom:14px;">
               <div class="f-group"><label class="f-label">Nome completo *</label><input class="f-input" id="p-nome" placeholder="Nome do paciente"/></div>
               <div class="f-group"><label class="f-label">Nº prontuário *</label><input class="f-input" id="p-prontuario" placeholder="Ex: 2024001234"/></div>
@@ -376,9 +351,8 @@ tbody tr:last-child td{border-bottom:none;}
               </div>
             </div>
           </div>
-          <!-- Apoio -->
-          <div id="nd-form-apoio-itens" style="display:none;">
-            <div class="section-div"><i class="ti ti-car-suv" style="color:var(--blue);"></i> Itens a transportar</div>
+          <div id="nd-form-apoio" style="display:none;">
+            <div class="section-div"><i class="ti ti-car-suv" style="color:var(--blue);margin-right:4px;"></i> Itens a transportar</div>
             <div id="nd-itens-lista">
               <div class="apoio-item" style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;">
                 <div class="f-group"><label class="f-label">Item / Descrição</label><input class="f-input" name="item_nome" placeholder="Ex: Medicamento X"/></div>
@@ -387,14 +361,14 @@ tbody tr:last-child td{border-bottom:none;}
                 <div class="f-group"><label class="f-label" style="opacity:0;">.</label><button class="btn btn-red btn-sm" onclick="remItem(this)"><i class="ti ti-trash"></i></button></div>
               </div>
             </div>
-            <button class="btn-outline btn-sm" onclick="addItem()"><i class="ti ti-plus"></i> Adicionar item</button>
+            <button class="btn-outline btn-sm" style="margin-top:4px;" onclick="addItem()"><i class="ti ti-plus"></i> Adicionar item</button>
           </div>
           <div style="display:flex;justify-content:space-between;margin-top:16px;">
             <button class="btn-outline" onclick="ndGoStep(2)"><i class="ti ti-arrow-left"></i> Voltar</button>
             <button class="btn" onclick="ndGoStep(4)"><i class="ti ti-eye"></i> Revisar</button>
           </div>
         </div>
-        <!-- STEP 4 -->
+        <!-- S4 -->
         <div id="nds4" style="display:none;">
           <div class="section-div">Revise antes de enviar</div>
           <div id="nd-review" style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;font-size:13px;line-height:2;"></div>
@@ -406,9 +380,9 @@ tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
-    <!-- PAINEL MOTORISTA -->
+    <!-- PAINEL DO MOTORISTA -->
     <div class="page" id="page-motorista">
-      <div id="ride-active-wrap" style="display:none;"></div>
+      <div id="transp-ativo-wrap"></div>
       <div class="card">
         <div class="card-title">
           <i class="ti ti-list"></i> Fila de solicitações
@@ -418,10 +392,10 @@ tbody tr:last-child td{border-bottom:none;}
       </div>
     </div>
 
-    <!-- MINHAS DEMANDAS -->
+    <!-- MINHAS SOLICITAÇÕES -->
     <div class="page" id="page-minhas-demandas">
       <div class="card">
-        <div class="card-title"><i class="ti ti-file-text"></i> Minhas solicitações</div>
+        <div class="card-title"><i class="ti ti-file-text"></i> Solicitações</div>
         <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="filtros-btn"></div>
         <div id="minhas-demandas-lista"></div>
       </div>
@@ -430,7 +404,7 @@ tbody tr:last-child td{border-bottom:none;}
     <!-- HISTÓRICO -->
     <div class="page" id="page-historico">
       <div class="card">
-        <div class="card-title"><i class="ti ti-history"></i> Histórico de corridas</div>
+        <div class="card-title"><i class="ti ti-history"></i> Histórico de transportes</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Código</th><th>Data</th><th>Tipo</th><th>Origem</th><th>Destino</th><th>Motorista</th><th>KM Inicial</th><th>KM Final</th><th>KM Rodados</th><th>Status</th></tr></thead>
@@ -447,7 +421,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div class="card-title"><i class="ti ti-chart-bar"></i> Consumo por veículo</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Veículo</th><th>Placa</th><th>Corridas</th><th>Km rodados</th><th>Custo est. (R$0,80/km)</th></tr></thead>
+            <thead><tr><th>Veículo</th><th>Placa</th><th>Transportes</th><th>Km rodados</th><th>Custo est. (R$0,80/km)</th></tr></thead>
             <tbody id="rel-body"></tbody>
           </table>
         </div>
@@ -458,13 +432,13 @@ tbody tr:last-child td{border-bottom:none;}
     <div class="page" id="page-cadastros">
       <div class="grid-2">
         <div class="card">
-          <div class="card-title"><i class="ti ti-building-hospital"></i> Setores</div>
+          <div class="card-title"><i class="ti ti-building-hospital"></i> Setores / Destinos</div>
           <div class="form-grid" style="margin-bottom:10px;">
             <div class="f-group"><label class="f-label">Nome do setor</label><input class="f-input" id="ns-nome" placeholder="Ex: UTI Neonatal"/></div>
             <div class="f-group"><label class="f-label">Tipo</label><select class="f-select" id="ns-tipo"><option value="interno">Interno</option><option value="externo">Externo</option></select></div>
           </div>
           <div class="f-group" style="margin-bottom:10px;"><label class="f-label">Andar / Endereço</label><input class="f-input" id="ns-info" placeholder="Ex: 2º andar"/></div>
-          <button class="btn btn-sm" onclick="addSetor()"><i class="ti ti-plus"></i> Adicionar</button>
+          <button class="btn btn-sm" onclick="addSetor()"><i class="ti ti-plus"></i> Adicionar setor</button>
           <div id="setores-lista" style="margin-top:14px;background:var(--s2);border-radius:8px;overflow:hidden;"></div>
         </div>
         <div class="card">
@@ -476,7 +450,7 @@ tbody tr:last-child td{border-bottom:none;}
           <div id="veiculos-lista" style="background:var(--s2);border-radius:8px;overflow:hidden;"></div>
         </div>
         <div class="card">
-          <div class="card-title"><i class="ti ti-building"></i> Empresa</div>
+          <div class="card-title"><i class="ti ti-building"></i> Dados da empresa</div>
           <div class="f-group" style="margin-bottom:10px;"><label class="f-label">Nome</label><input class="f-input" value="Hospital da Mulher do Pará — HMPá"/></div>
           <div class="f-group" style="margin-bottom:10px;"><label class="f-label">Endereço</label><input class="f-input" value="Av. Gentil Bittencourt, 2175 — São Brás, Belém/PA"/></div>
           <div class="form-grid" style="margin-bottom:10px;">
@@ -494,7 +468,7 @@ tbody tr:last-child td{border-bottom:none;}
         <div class="card-title"><i class="ti ti-bell"></i> Notificações
           <button class="btn-outline btn-sm" style="margin-left:auto;" onclick="marcarTodasLidas()">Marcar todas como lidas</button>
         </div>
-        <div id="notif-lista"></div>
+        <div id="notif-lista" style="background:var(--s2);border-radius:8px;overflow:hidden;"></div>
       </div>
     </div>
 
@@ -502,42 +476,37 @@ tbody tr:last-child td{border-bottom:none;}
 </div>
 </div>
 
-<!-- MODAL DETALHES -->
-<div class="modal-bg" id="modal-demanda" onclick="closeModalBg(event,'modal-demanda')">
+<!-- MODAL DETALHES SOLICITAÇÃO -->
+<div class="modal-bg" id="modal-detalhe" onclick="if(event.target===this)closeModal('modal-detalhe')">
   <div class="modal">
-    <div class="modal-head"><h3>Detalhes da solicitação</h3><button class="modal-close" onclick="closeModal('modal-demanda')"><i class="ti ti-x"></i></button></div>
-    <div class="modal-body" id="modal-demanda-body"></div>
-    <div class="modal-footer"><button class="btn-outline" onclick="closeModal('modal-demanda')"><i class="ti ti-x"></i> Fechar</button></div>
+    <div class="modal-head"><h3 id="modal-detalhe-titulo">Detalhes da solicitação</h3><button class="modal-close" onclick="closeModal('modal-detalhe')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body" id="modal-detalhe-body"></div>
+    <div class="modal-footer"><button class="btn-outline" onclick="closeModal('modal-detalhe')"><i class="ti ti-x"></i> Fechar</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast-el"></div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ═══════════════════════════════════════════
-//  STORAGE — usa localStorage para persistência
+//  BANCO LOCAL (localStorage)
 // ═══════════════════════════════════════════
-const STORAGE_KEY = 'hmpa_data';
-
-function loadDB() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (raw) return JSON.parse(raw);
-  return initDB();
+const SK = 'hmpa_v4';
+function loadDB(){
+  const r=localStorage.getItem(SK);
+  return r?JSON.parse(r):initDB();
 }
-
-function saveDB() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
-}
-
-function initDB() {
-  const db = {
-    usuarios: [
-      {id:1, matricula:'HMPa-SOL01', nome:'Ana Paula Souza',  senha:'123456', perfil:'solicitante'},
-      {id:2, matricula:'HMPa-DRV01', nome:'João Rodrigues',   senha:'123456', perfil:'motorista'},
-      {id:3, matricula:'HMPa-DRV02', nome:'Marcos Santana',   senha:'123456', perfil:'motorista'},
-      {id:4, matricula:'HMPa-GES01', nome:'Fernanda Tavares', senha:'123456', perfil:'gestor'},
+function saveDB(){ localStorage.setItem(SK,JSON.stringify(DB)); }
+function initDB(){
+  const db={
+    usuarios:[
+      {id:1,matricula:'HMPa-SOL01',nome:'Ana Paula Souza', senha:'123456',perfil:'solicitante'},
+      {id:2,matricula:'HMPa-DRV01',nome:'João Rodrigues',  senha:'123456',perfil:'motorista'},
+      {id:3,matricula:'HMPa-DRV02',nome:'Marcos Santana',  senha:'123456',perfil:'motorista'},
+      {id:4,matricula:'HMPa-GES01',nome:'Fernanda Tavares',senha:'123456',perfil:'gestor'},
     ],
-    setores: [
+    setores:[
       {id:1,nome:'UTI Adulto — Bloco C',  tipo:'interno',info:'2º andar'},
       {id:2,nome:'Exames — Bloco B',       tipo:'interno',info:'Térreo'},
       {id:3,nome:'Centro Cirúrgico',       tipo:'interno',info:'3º andar'},
@@ -552,430 +521,398 @@ function initDB() {
       {id:12,nome:'Hospital Beneficente',  tipo:'externo',info:'Av. Nazaré, 864'},
       {id:13,nome:'UPA Bengui',            tipo:'externo',info:'Bengui, Belém'},
     ],
-    veiculos: [
-      {id:1,nome:'Ambulância 01',tipo:'ambulancia',placa:'HPA-1234',modelo:'Renault Master 2021', hodometro:85000,status:'disponivel'},
-      {id:2,nome:'Apoio 01',     tipo:'apoio',     placa:'HPA-5678',modelo:'Toyota Corolla 2020', hodometro:42300,status:'disponivel'},
-      {id:3,nome:'Apoio 02',     tipo:'apoio',     placa:'HPA-9012',modelo:'Chevrolet Spin 2022',  hodometro:61700,status:'disponivel'},
+    veiculos:[
+      {id:1,nome:'Ambulância 01',tipo:'ambulancia',placa:'HPA-1234',modelo:'Renault Master 2021',hodometro:85000,status:'disponivel'},
+      {id:2,nome:'Apoio 01',     tipo:'apoio',     placa:'HPA-5678',modelo:'Toyota Corolla 2020',hodometro:42300,status:'disponivel'},
+      {id:3,nome:'Apoio 02',     tipo:'apoio',     placa:'HPA-9012',modelo:'Chevrolet Spin 2022', hodometro:61700,status:'disponivel'},
     ],
-    motoristas: [
+    motoristas:[
       {id:1,usuario_id:2,cnh:'D',veiculo_id:1,status:'disponivel'},
       {id:2,usuario_id:3,cnh:'D',veiculo_id:3,status:'disponivel'},
     ],
-    demandas: [],
-    notificacoes: [],
-    _seq: {demandas:0}
+    demandas:[],
+    notificacoes:[],
+    _seq:0,
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  localStorage.setItem(SK,JSON.stringify(db));
   return db;
 }
-
-let DB = loadDB();
+let DB=loadDB();
 
 // ═══════════════════════════════════════════
 //  ESTADO
 // ═══════════════════════════════════════════
-let currentUser = null;
-let currentRole = 'solicitante';
-let ndStep = 1;
-let activeRide = null;
-let toastTimer = null;
-let filterStatus = 'all';
+let currentUser=null, ndStep=1, toastTimer=null, filterStatus='all';
+
+// ═══════════════════════════════════════════
+//  MAPA DE FUNDO — HMPá
+// ═══════════════════════════════════════════
+let mapBg=null;
+function initMapBg(){
+  if(mapBg||typeof L==='undefined') return;
+  mapBg=L.map('map-bg',{
+    center:[-1.454589,-48.472931],zoom:15,
+    zoomControl:false,scrollWheelZoom:false,dragging:false,
+    touchZoom:false,doubleClickZoom:false,keyboard:false,attributionControl:false,
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(mapBg);
+  const icon=L.divIcon({
+    html:`<div style="width:48px;height:48px;border-radius:50%;background:rgba(6,193,103,.18);border:3px solid #06C167;display:flex;align-items:center;justify-content:center;animation:ping 2s ease-in-out infinite;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06C167" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/>
+      </svg>
+    </div>`,
+    className:'',iconSize:[48,48],iconAnchor:[24,24],
+  });
+  L.marker([-1.454589,-48.472931],{icon}).addTo(mapBg)
+    .bindPopup(`<div style="font-size:13px;"><b style="color:#06C167;">Hospital da Mulher do Pará</b><br/><span style="color:#888;font-size:12px;">Av. Gentil Bittencourt, 2175</span><br/><span style="color:#888;font-size:12px;">São Brás, Belém — PA</span></div>`)
+    .openPopup();
+}
+// Tenta iniciar o mapa assim que Leaflet carregar
+(function tryMap(){
+  if(typeof L!=='undefined') initMapBg();
+  else setTimeout(tryMap,100);
+})();
 
 // ═══════════════════════════════════════════
 //  LOGIN
 // ═══════════════════════════════════════════
-function setRole(el, role) {
-  document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  currentRole = role;
-}
-
-function doLogin() {
-  const mat   = document.getElementById('login-mat').value.trim();
-  const senha = document.getElementById('login-pw').value;
-  if (!mat || !senha) { alert('Preencha matrícula e senha.'); return; }
-  const user = DB.usuarios.find(u => u.matricula === mat && u.senha === senha);
-  if (!user) { alert('Matrícula ou senha incorretos.\n\nUse: HMPa-SOL01 / 123456'); return; }
-  currentUser = user;
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('user-av').textContent = user.nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  document.getElementById('user-name').textContent = user.nome;
-  document.getElementById('user-role').textContent = ucfirst(user.perfil);
+function setRole(el,role){ document.querySelectorAll('.role-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); }
+function doLogin(){
+  const mat=document.getElementById('login-mat').value.trim();
+  const pw=document.getElementById('login-pw').value;
+  if(!mat||!pw){toast('Preencha matrícula e senha.','err');return;}
+  const u=DB.usuarios.find(x=>x.matricula===mat&&x.senha===pw);
+  if(!u){toast('Matrícula ou senha incorretos.','err');return;}
+  currentUser=u;
+  document.getElementById('login-page').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-av').textContent=u.nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('user-name').textContent=u.nome;
+  document.getElementById('user-role').textContent=ucfirst(u.perfil);
   buildSidebar();
   openPage('dashboard');
-  updateNotifBadge();
-  toast('Bem-vindo(a), ' + user.nome.split(' ')[0] + '! 👋', 'ok');
+  updateNotifDot();
+  toast('Bem-vindo(a), '+u.nome.split(' ')[0]+'!','ok');
 }
-
-function doLogout() {
-  currentUser = null;
-  activeRide = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('login-mat').value = '';
-  document.getElementById('login-pw').value = '';
+function doLogout(){
+  currentUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('login-mat').value='';
+  document.getElementById('login-pw').value='';
 }
 
 // ═══════════════════════════════════════════
 //  SIDEBAR
 // ═══════════════════════════════════════════
-const MENUS = {
-  solicitante: [
+const MENUS={
+  solicitante:[
     {s:'Principal'},
-    {id:'dashboard',       icon:'ti-layout-dashboard', label:'Dashboard'},
-    {id:'nova-demanda',    icon:'ti-plus',             label:'Nova solicitação'},
-    {id:'minhas-demandas', icon:'ti-file-text',        label:'Minhas solicitações', badge:true},
+    {id:'dashboard',       icon:'ti-layout-dashboard',label:'Dashboard'},
+    {id:'nova-demanda',    icon:'ti-plus',            label:'Nova solicitação'},
+    {id:'minhas-demandas', icon:'ti-file-text',       label:'Minhas solicitações',badge:true},
     {s:'Sistema'},
-    {id:'historico',       icon:'ti-history',          label:'Histórico'},
-    {id:'notificacoes',    icon:'ti-bell',             label:'Notificações', badge:true},
+    {id:'historico',       icon:'ti-history',         label:'Histórico'},
+    {id:'notificacoes',    icon:'ti-bell',            label:'Notificações',badge:true},
   ],
-  motorista: [
+  motorista:[
     {s:'Principal'},
-    {id:'motorista',       icon:'ti-steering-wheel',   label:'Painel do motorista', badge:true},
-    {id:'dashboard',       icon:'ti-layout-dashboard', label:'Dashboard'},
+    {id:'motorista',       icon:'ti-steering-wheel',  label:'Painel do motorista',badge:true},
+    {id:'dashboard',       icon:'ti-layout-dashboard',label:'Dashboard'},
     {s:'Registros'},
-    {id:'historico',       icon:'ti-history',          label:'Histórico de corridas'},
-    {id:'notificacoes',    icon:'ti-bell',             label:'Notificações', badge:true},
+    {id:'historico',       icon:'ti-history',         label:'Histórico de transportes'},
+    {id:'notificacoes',    icon:'ti-bell',            label:'Notificações',badge:true},
   ],
-  gestor: [
+  gestor:[
     {s:'Principal'},
-    {id:'dashboard',       icon:'ti-layout-dashboard', label:'Dashboard'},
-    {id:'motorista',       icon:'ti-steering-wheel',   label:'Painel motorista', badge:true},
+    {id:'dashboard',       icon:'ti-layout-dashboard',label:'Dashboard'},
+    {id:'motorista',       icon:'ti-steering-wheel',  label:'Painel motorista',badge:true},
     {s:'Gestão'},
-    {id:'minhas-demandas', icon:'ti-list',             label:'Todas as demandas'},
-    {id:'historico',       icon:'ti-history',          label:'Histórico'},
-    {id:'relatorio',       icon:'ti-chart-bar',        label:'Relatório financeiro'},
-    {id:'cadastros',       icon:'ti-settings',         label:'Cadastros'},
+    {id:'minhas-demandas', icon:'ti-list',            label:'Todas as solicitações'},
+    {id:'historico',       icon:'ti-history',         label:'Histórico'},
+    {id:'relatorio',       icon:'ti-chart-bar',       label:'Relatório financeiro'},
+    {id:'cadastros',       icon:'ti-settings',        label:'Cadastros'},
     {s:'Sistema'},
-    {id:'notificacoes',    icon:'ti-bell',             label:'Notificações', badge:true},
+    {id:'notificacoes',    icon:'ti-bell',            label:'Notificações',badge:true},
   ],
 };
-
-function buildSidebar() {
-  const items = MENUS[currentUser.perfil] || MENUS.solicitante;
-  let html = '';
-  items.forEach(item => {
-    if (item.s) {
-      html += `<div class="nav-section">${item.s}</div>`;
-    } else {
-      const pending = item.badge ? countPending(item.id) : 0;
-      html += `<div class="nav-item" id="nav-${item.id}" onclick="openPage('${item.id}')">
-        <i class="ti ${item.icon}"></i><span>${item.label}</span>
-        ${pending>0?`<span class="nav-badge" id="nb-${item.id}">${pending}</span>`:''}
-      </div>`;
-    }
+function buildSidebar(){
+  const items=MENUS[currentUser.perfil]||MENUS.solicitante;
+  let html='';
+  items.forEach(item=>{
+    if(item.s){ html+=`<div class="nav-section">${item.s}</div>`; return; }
+    const cnt=item.badge?getPendingCount(item.id):0;
+    html+=`<div class="nav-item" id="nav-${item.id}" onclick="openPage('${item.id}')">
+      <i class="ti ${item.icon}"></i><span>${item.label}</span>
+      ${cnt>0?`<span class="nav-badge" id="nb-${item.id}">${cnt}</span>`:''}
+    </div>`;
   });
-  document.getElementById('sidebar-nav').innerHTML = html;
+  document.getElementById('sidebar-nav').innerHTML=html;
 }
-
-function countPending(id) {
-  if (id === 'motorista') return DB.demandas.filter(d=>d.status==='aguardando').length;
-  if (id === 'minhas-demandas') return DB.demandas.filter(d=>d.status==='aguardando'&&d.solicitante_id===currentUser.id).length;
-  if (id === 'notificacoes') return DB.notificacoes.filter(n=>n.usuario_id===currentUser.id&&!n.lida).length;
+function getPendingCount(id){
+  if(id==='motorista') return DB.demandas.filter(d=>d.status==='aguardando').length;
+  if(id==='minhas-demandas') return DB.demandas.filter(d=>d.status==='aguardando'&&d.solicitante_id===currentUser.id).length;
+  if(id==='notificacoes') return DB.notificacoes.filter(n=>n.usuario_id===currentUser.id&&!n.lida).length;
   return 0;
 }
-
-function updateNotifBadge() {
-  const count = DB.notificacoes.filter(n=>n.usuario_id===currentUser.id&&!n.lida).length;
-  const dot = document.getElementById('notif-dot');
-  if (dot) dot.style.display = count > 0 ? 'block' : 'none';
+function updateNotifDot(){
+  const cnt=DB.notificacoes.filter(n=>n.usuario_id===currentUser.id&&!n.lida).length;
+  document.getElementById('notif-dot').style.display=cnt>0?'block':'none';
 }
 
 // ═══════════════════════════════════════════
 //  NAVEGAÇÃO
 // ═══════════════════════════════════════════
-function openPage(id) {
+const PAGE_TITLES={
+  'dashboard':       ['Dashboard','Visão geral do sistema'],
+  'nova-demanda':    ['Nova solicitação','Preencha os dados do transporte'],
+  'minhas-demandas': ['Solicitações','Acompanhe suas solicitações'],
+  'motorista':       ['Painel do motorista','Fila de transportes pendentes'],
+  'historico':       ['Histórico de transportes','Registro completo'],
+  'relatorio':       ['Relatório financeiro','Custos e quilometragem'],
+  'cadastros':       ['Cadastros','Setores, motoristas e veículos'],
+  'notificacoes':    ['Notificações','Avisos e alertas do sistema'],
+};
+function openPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const page = document.getElementById('page-'+id);
-  const nav  = document.getElementById('nav-'+id);
-  if (page) page.classList.add('active');
-  if (nav)  nav.classList.add('active');
-  const titles = {
-    'dashboard':       ['Dashboard','Visão geral'],
-    'nova-demanda':    ['Nova solicitação','Preencha os dados'],
-    'minhas-demandas': ['Demandas','Suas solicitações'],
-    'motorista':       ['Painel do motorista','Fila e corrida ativa'],
-    'historico':       ['Histórico','Todas as corridas'],
-    'relatorio':       ['Relatório financeiro','Custos e km'],
-    'cadastros':       ['Cadastros','Setores, motoristas e veículos'],
-    'notificacoes':    ['Notificações','Avisos do sistema'],
+  const pg=document.getElementById('page-'+id), nv=document.getElementById('nav-'+id);
+  if(pg) pg.classList.add('active');
+  if(nv) nv.classList.add('active');
+  const [t,s]=PAGE_TITLES[id]||[id,''];
+  document.getElementById('topbar-title').textContent=t;
+  document.getElementById('topbar-sub').textContent=s;
+  const fns={
+    'dashboard':renderDashboard,'motorista':renderMotorista,
+    'minhas-demandas':()=>renderMinhasDemandas(filterStatus),
+    'historico':renderHistorico,'relatorio':renderRelatorio,
+    'cadastros':renderCadastros,'notificacoes':renderNotificacoes,
+    'nova-demanda':initNovaDemanda,
   };
-  const t = titles[id] || [id,''];
-  document.getElementById('topbar-title').textContent = t[0];
-  document.querySelector('.topbar-sub').textContent = t[1];
-  // Renderiza página
-  if (id==='dashboard')       renderDashboard();
-  if (id==='motorista')       renderMotorista();
-  if (id==='minhas-demandas') renderMinhasDemandas();
-  if (id==='historico')       renderHistorico();
-  if (id==='relatorio')       renderRelatorio();
-  if (id==='cadastros')       renderCadastros();
-  if (id==='notificacoes')    renderNotificacoes();
-  if (id==='nova-demanda')    initNovaDemanda();
+  if(fns[id]) fns[id]();
 }
 
 // ═══════════════════════════════════════════
 //  DASHBOARD
 // ═══════════════════════════════════════════
-function renderDashboard() {
-  const total   = DB.demandas.length;
-  const conc    = DB.demandas.filter(d=>d.status==='concluida').length;
-  const aguard  = DB.demandas.filter(d=>d.status==='aguardando').length;
-  const kmTotal = DB.demandas.filter(d=>d.km_inicio&&d.km_fim).reduce((a,d)=>a+(d.km_fim-d.km_inicio),0);
-  document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Total de demandas</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--green);">${conc}</div><div class="stat-label">Concluídas</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--amber);">${aguard}</div><div class="stat-label">Aguardando</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--blue);">${kmTotal.toFixed(1)}</div><div class="stat-label">Km rodados total</div></div>`;
-  const recentes = [...DB.demandas].reverse().slice(0,5);
-  document.getElementById('dash-recentes').innerHTML = recentes.length
-    ? recentes.map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
-        <div style="width:36px;height:36px;border-radius:50%;background:${d.tipo==='ambulancia'?'rgba(209,41,61,.15)':'rgba(39,110,241,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ${d.tipo==='ambulancia'?'ti-ambulance':'ti-car-suv'}" style="color:${d.tipo==='ambulancia'?'var(--red)':'var(--blue)'}"></i>
-        </div>
-        <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${d.origem} → ${d.destino}</div>
-        <div style="font-size:11px;color:var(--text2);">${d.codigo} · ${d.solicitante_nome}</div></div>
-        ${pillStatus(d.status)}
-      </div>`).join('')
-    : '<div class="empty-state" style="padding:20px;"><p>Nenhuma demanda ainda</p></div>';
-  document.getElementById('dash-atividade').innerHTML = DB.demandas.length
-    ? [...DB.demandas].reverse().slice(0,4).map(d=>`
-        <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="width:7px;height:7px;border-radius:50%;background:${d.status==='concluida'?'var(--green)':d.status==='aguardando'?'var(--amber)':'var(--blue)'};flex-shrink:0;margin-top:5px;"></div>
-          <div><div style="font-size:13px;font-weight:600;">${d.codigo} — ${d.origem} → ${d.destino}</div>
-          <div style="font-size:11px;color:var(--text2);margin-top:2px;">${d.criado_em}</div></div>
-        </div>`).join('')
-    : '<div class="empty-state" style="padding:20px;"><p>Nenhuma atividade</p></div>';
+function renderDashboard(){
+  const total=DB.demandas.length;
+  const conc=DB.demandas.filter(d=>d.status==='concluida').length;
+  const aguard=DB.demandas.filter(d=>d.status==='aguardando').length;
+  const kmTotal=DB.demandas.filter(d=>d.km_fim!=null).reduce((a,d)=>a+(d.km_fim-d.km_inicio),0);
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Total de solicitações</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);">${conc}</div><div class="stat-label">Transportes concluídos</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--amber);">${aguard}</div><div class="stat-label">Aguardando motorista</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--blue);">${kmTotal.toFixed(1)}</div><div class="stat-label">Km percorridos total</div></div>`;
+  const rec=[...DB.demandas].reverse().slice(0,5);
+  document.getElementById('dash-recentes').innerHTML=rec.length?rec.map(d=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:50%;background:${d.tipo==='ambulancia'?'rgba(209,41,61,.15)':'rgba(39,110,241,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="ti ${d.tipo==='ambulancia'?'ti-ambulance':'ti-car-suv'}" style="color:${d.tipo==='ambulancia'?'var(--red)':'var(--blue)'}"></i>
+      </div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${d.origem} → ${d.destino}</div>
+      <div style="font-size:11px;color:var(--text2);">${d.codigo} · ${d.solicitante_nome}</div></div>
+      ${pillStatus(d.status)}
+    </div>`).join('')
+    :'<div class="empty-state" style="padding:20px;"><p>Nenhuma solicitação registrada</p></div>';
+  document.getElementById('dash-atividade').innerHTML=rec.length?rec.map(d=>`
+    <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="width:7px;height:7px;border-radius:50%;background:${d.status==='concluida'?'var(--green)':d.status==='aguardando'?'var(--amber)':'var(--blue)'};flex-shrink:0;margin-top:5px;"></div>
+      <div><div style="font-size:13px;font-weight:600;">${d.codigo} — ${d.origem} → ${d.destino}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px;">${d.criado_em}</div></div>
+    </div>`).join('')
+    :'<div class="empty-state" style="padding:20px;"><p>Nenhuma atividade</p></div>';
 }
 
 // ═══════════════════════════════════════════
 //  NOVA DEMANDA
 // ═══════════════════════════════════════════
-function initNovaDemanda() {
-  ndStep = 1;
-  for(let i=1;i<=4;i++){
-    document.getElementById('nds'+i).style.display = i===1?'block':'none';
-    updateStepCircle(i,'pending');
-  }
-  updateStepCircle(1,'active');
-  // Popula setores
-  const opts = DB.setores.map(s=>`<option value="${s.id}">${s.nome}${s.info?' — '+s.info:''}</option>`).join('');
-  const base = '<option value="">Selecione o setor...</option>';
-  document.getElementById('nd-origem').innerHTML = base + opts;
-  document.getElementById('nd-destino').innerHTML = base + opts;
-  // Preenche data atual
-  const now = new Date();
-  document.getElementById('nd-datetime').value = now.toISOString().slice(0,16);
-  document.getElementById('nd-solicitante').value = currentUser.nome;
+function initNovaDemanda(){
+  ndStep=1;
+  for(let i=1;i<=4;i++){ document.getElementById('nds'+i).style.display=i===1?'block':'none'; setStepCircle(i,'pending'); }
+  setStepCircle(1,'active');
+  const opts=DB.setores.map(s=>`<option value="${s.id}">${s.nome}${s.info?' — '+s.info:''}</option>`).join('');
+  const base='<option value="">Selecione o local...</option>';
+  document.getElementById('nd-origem').innerHTML=base+opts;
+  document.getElementById('nd-destino').innerHTML=base+opts;
+  document.getElementById('nd-datetime').value=new Date().toISOString().slice(0,16);
+  document.getElementById('nd-solicitante').value=currentUser.nome;
+  document.getElementById('nd-form-amb').style.display='none';
+  document.getElementById('nd-form-apoio').style.display='none';
 }
-
-function toggleNdTipo() {
-  const t = document.getElementById('nd-tipo').value;
-  document.getElementById('nd-apoio-cat').style.display = t==='apoio'?'block':'none';
-  document.getElementById('nd-form-amb').style.display = t==='ambulancia'?'block':'none';
-  document.getElementById('nd-form-apoio-itens').style.display = t==='apoio'?'block':'none';
-  document.getElementById('nd-form-amb').style.display = 'none';
-  document.getElementById('nd-form-apoio-itens').style.display = 'none';
+function toggleNdTipo(){
+  const t=document.getElementById('nd-tipo').value;
+  document.getElementById('nd-apoio-cat').style.display=t==='apoio'?'block':'none';
 }
-
-function updateStepCircle(i, state) {
-  const c = document.getElementById('ndsc-'+i);
-  const l = document.getElementById('ndsl-'+i);
-  const st= document.getElementById('ndstep-'+i);
-  if(!c) return;
+function setStepCircle(i,state){
+  const c=document.getElementById('ndsc-'+i),l=document.getElementById('ndsl-'+i),st=document.getElementById('ndstep-'+i);
+  if(!c)return;
   if(state==='done'){
     c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--green);background:var(--green);color:#000;display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';
-    c.textContent='✓'; st.className='prog-step done';
-    // Linha
-    const ln = st.querySelector('::after');
+    c.textContent='✓';st.className='prog-step done';l.style.color='';l.style.fontWeight='';
   } else if(state==='active'){
     c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--green);background:var(--bg);color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';
-    c.textContent=i; st.className='prog-step active'; l.style.color='var(--green)'; l.style.fontWeight='700';
+    c.textContent=i;st.className='prog-step active';l.style.color='var(--green)';l.style.fontWeight='700';
   } else {
     c.style.cssText='width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:var(--bg);color:var(--text2);display:flex;align-items:center;justify-content:center;margin:0 auto 5px;font-size:12px;font-weight:700;position:relative;z-index:1;';
-    c.textContent=i; st.className='prog-step'; l.style.color='var(--text2)'; l.style.fontWeight='400';
+    c.textContent=i;st.className='prog-step';l.style.color='';l.style.fontWeight='';
   }
 }
-
-function ndGoStep(n) {
-  if (n > ndStep) {
-    if(ndStep===1 && !document.getElementById('nd-tipo').value){ toast('Selecione o tipo de veículo.','err'); return; }
+function ndGoStep(n){
+  if(n>ndStep){
+    if(ndStep===1&&!document.getElementById('nd-tipo').value){toast('Selecione o tipo de veículo.','err');return;}
     if(ndStep===2){
-      if(!document.getElementById('nd-origem').value){ toast('Selecione a origem.','err'); return; }
-      if(!document.getElementById('nd-destino').value){ toast('Selecione o destino.','err'); return; }
-      if(document.getElementById('nd-origem').value===document.getElementById('nd-destino').value){ toast('Origem e destino não podem ser iguais.','err'); return; }
-      if(!document.getElementById('nd-solicitante').value){ toast('Informe o solicitante.','err'); return; }
-    }
-    if(ndStep===2){
-      const tipo = document.getElementById('nd-tipo').value;
-      document.getElementById('nd-form-amb').style.display = tipo==='ambulancia'?'block':'none';
-      document.getElementById('nd-form-apoio-itens').style.display = tipo==='apoio'?'block':'none';
+      if(!document.getElementById('nd-origem').value){toast('Selecione a origem.','err');return;}
+      if(!document.getElementById('nd-destino').value){toast('Selecione o destino.','err');return;}
+      if(document.getElementById('nd-origem').value===document.getElementById('nd-destino').value){toast('Origem e destino não podem ser iguais.','err');return;}
+      if(!document.getElementById('nd-solicitante').value){toast('Informe o responsável.','err');return;}
+      // Mostra form correto no step 3
+      const tipo=document.getElementById('nd-tipo').value;
+      document.getElementById('nd-form-amb').style.display=tipo==='ambulancia'?'block':'none';
+      document.getElementById('nd-form-apoio').style.display=tipo==='apoio'?'block':'none';
     }
     if(n===4) buildReview();
   }
   document.getElementById('nds'+ndStep).style.display='none';
-  ndStep = n;
-  document.getElementById('nds'+ndStep).style.display='block';
-  for(let i=1;i<=4;i++) updateStepCircle(i, i<n?'done':i===n?'active':'pending');
+  ndStep=n;
+  document.getElementById('nds'+n).style.display='block';
+  for(let i=1;i<=4;i++) setStepCircle(i,i<n?'done':i===n?'active':'pending');
 }
-
-function buildReview() {
-  const tipo = document.getElementById('nd-tipo').value;
-  const orig = document.getElementById('nd-origem').selectedOptions[0]?.text||'—';
-  const dest = document.getElementById('nd-destino').selectedOptions[0]?.text||'—';
-  const solic= document.getElementById('nd-solicitante').value;
-  const prior= document.getElementById('nd-prioridade').value;
-  const obs  = document.getElementById('nd-obs').value;
-  let extra = '';
+function buildReview(){
+  const tipo=document.getElementById('nd-tipo').value;
+  const orig=document.getElementById('nd-origem').selectedOptions[0]?.text||'—';
+  const dest=document.getElementById('nd-destino').selectedOptions[0]?.text||'—';
+  const solic=document.getElementById('nd-solicitante').value;
+  const prior=document.getElementById('nd-prioridade').value;
+  const obs=document.getElementById('nd-obs').value;
+  let extra='';
   if(tipo==='ambulancia'){
-    const pNome = document.getElementById('p-nome').value||'—';
-    const pPront= document.getElementById('p-prontuario').value||'—';
-    const pEst  = document.getElementById('p-estado').value||'—';
-    extra = `<br/><b>Paciente:</b> ${pNome} — Prontuário: ${pPront} — Estado: ${pEst}`;
+    extra=`<br/><b>Paciente:</b> ${document.getElementById('p-nome').value||'—'} — Prontuário: ${document.getElementById('p-prontuario').value||'—'} — Estado: ${document.getElementById('p-estado').value||'—'}`;
   } else {
-    const cat  = document.getElementById('nd-categoria').value||'—';
-    const desc = document.getElementById('nd-descricao').value||'—';
-    extra = `<br/><b>Categoria:</b> ${cat} — <b>Descrição:</b> ${desc}`;
+    extra=`<br/><b>Categoria:</b> ${document.getElementById('nd-categoria').value||'—'} — <b>Descrição:</b> ${document.getElementById('nd-descricao').value||'—'}`;
   }
-  document.getElementById('nd-review').innerHTML = `
-    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">
-      ${pillPrioridade(prior)}<span class="pill pill-gray">${tipo==='ambulancia'?'🚑 Ambulância':'🚗 Carro de apoio'}</span>
-    </div>
-    <b>Origem:</b> ${orig}<br/><b>Destino:</b> ${dest}<br/>
-    <b>Solicitante:</b> ${solic}${obs?`<br/><b>Obs:</b> ${obs}`:''}${extra}`;
+  document.getElementById('nd-review').innerHTML=`
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;">${pillPrioridade(prior)}<span class="pill pill-gray">${tipo==='ambulancia'?'🚑 Ambulância':'🚗 Veículo de apoio'}</span></div>
+    <b>Origem:</b> ${orig}<br/><b>Destino:</b> ${dest}<br/><b>Responsável:</b> ${solic}${obs?`<br/><b>Obs:</b> ${obs}`:''}${extra}`;
 }
-
-function addItem() {
-  const l = document.getElementById('nd-itens-lista');
-  const d = document.createElement('div');
+function addItem(){
+  const l=document.getElementById('nd-itens-lista'),d=document.createElement('div');
   d.className='apoio-item';
   d.style.cssText='display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;';
   d.innerHTML='<div class="f-group"><label class="f-label">Item</label><input class="f-input" name="item_nome" placeholder="Descrição"/></div><div class="f-group"><label class="f-label">Qtde</label><input class="f-input" name="item_qtde"/></div><div class="f-group"><label class="f-label">Setor</label><input class="f-input" name="item_setor"/></div><div class="f-group"><label class="f-label" style="opacity:0;">.</label><button class="btn btn-red btn-sm" onclick="remItem(this)"><i class="ti ti-trash"></i></button></div>';
   l.appendChild(d);
 }
-function remItem(btn){ btn.closest('.apoio-item').remove(); }
-
-function submitDemanda() {
-  DB._seq.demandas++;
-  const codigo = 'DEM-' + String(DB._seq.demandas).padStart(4,'0');
-  const tipo   = document.getElementById('nd-tipo').value;
-  const origId = parseInt(document.getElementById('nd-origem').value);
-  const destId = parseInt(document.getElementById('nd-destino').value);
-  const orig   = DB.setores.find(s=>s.id===origId)?.nome||'—';
-  const dest   = DB.setores.find(s=>s.id===destId)?.nome||'—';
-  const dem = {
-    id: DB._seq.demandas, codigo, tipo,
-    prioridade:    document.getElementById('nd-prioridade').value,
-    status:        'aguardando',
-    solicitante_id: currentUser.id,
-    solicitante_nome: document.getElementById('nd-solicitante').value,
-    origem_id: origId, destino_id: destId,
-    origem: orig, destino: dest,
-    observacoes: document.getElementById('nd-obs').value,
-    agendado_para: document.getElementById('nd-datetime').value,
-    criado_em: new Date().toLocaleString('pt-BR'),
-    motorista_nome: null, veiculo_nome: null,
-    km_inicio: null, km_fim: null,
+function remItem(btn){btn.closest('.apoio-item').remove();}
+function submitDemanda(){
+  DB._seq++;
+  const codigo='DEM-'+String(DB._seq).padStart(4,'0');
+  const tipo=document.getElementById('nd-tipo').value;
+  const origId=parseInt(document.getElementById('nd-origem').value);
+  const destId=parseInt(document.getElementById('nd-destino').value);
+  const orig=DB.setores.find(s=>s.id===origId)?.nome||'—';
+  const dest=DB.setores.find(s=>s.id===destId)?.nome||'—';
+  const dem={
+    id:DB._seq,codigo,tipo,
+    prioridade:document.getElementById('nd-prioridade').value,
+    status:'aguardando',
+    solicitante_id:currentUser.id,
+    solicitante_nome:document.getElementById('nd-solicitante').value,
+    origem_id:origId,destino_id:destId,origem:orig,destino:dest,
+    observacoes:document.getElementById('nd-obs').value,
+    agendado_para:document.getElementById('nd-datetime').value,
+    criado_em:new Date().toLocaleString('pt-BR'),
+    motorista_nome:null,veiculo_nome:null,motorista_id:null,
+    km_inicio:null,km_fim:null,
   };
   if(tipo==='ambulancia'){
-    dem.paciente = {
-      nome:        document.getElementById('p-nome').value,
-      prontuario:  document.getElementById('p-prontuario').value,
-      cpf:         document.getElementById('p-cpf').value,
-      nascimento:  document.getElementById('p-nascimento').value,
-      cid:         document.getElementById('p-cid').value,
-      medico:      document.getElementById('p-medico').value,
-      estado:      document.getElementById('p-estado').value,
-      suporte:     document.getElementById('p-suporte').value,
+    dem.paciente={
+      nome:document.getElementById('p-nome').value,
+      prontuario:document.getElementById('p-prontuario').value,
+      cpf:document.getElementById('p-cpf').value,
+      nascimento:document.getElementById('p-nascimento').value,
+      cid:document.getElementById('p-cid').value,
+      medico:document.getElementById('p-medico').value,
+      estado:document.getElementById('p-estado').value,
+      suporte:document.getElementById('p-suporte').value,
       acompanhante:document.getElementById('p-acompanhante').value,
     };
   } else {
-    dem.categoria = document.getElementById('nd-categoria').value;
-    dem.descricao = document.getElementById('nd-descricao').value;
-    dem.itens = [...document.querySelectorAll('#nd-itens-lista .apoio-item')].map(el=>({
-      nome:  el.querySelector('[name=item_nome]').value,
-      qtde:  el.querySelector('[name=item_qtde]').value,
-      setor: el.querySelector('[name=item_setor]').value,
-    })).filter(it=>it.nome);
+    dem.categoria=document.getElementById('nd-categoria').value;
+    dem.descricao=document.getElementById('nd-descricao').value;
+    dem.itens=[...document.querySelectorAll('#nd-itens-lista .apoio-item')].map(el=>({
+      nome:el.querySelector('[name=item_nome]').value,
+      qtde:el.querySelector('[name=item_qtde]').value,
+      setor:el.querySelector('[name=item_setor]').value,
+    })).filter(it=>it.nome.trim());
   }
   DB.demandas.push(dem);
-  // Notifica motoristas
+  // Notifica todos os motoristas
   DB.motoristas.forEach(m=>{
     DB.notificacoes.push({
-      id: Date.now()+m.id, usuario_id: m.usuario_id,
-      tipo:'demanda', mensagem:`Nova demanda ${dem.prioridade.toUpperCase()} — ${orig} → ${dest} (${codigo})`,
-      demanda_id: dem.id, lida:false,
-      criado_em: new Date().toLocaleString('pt-BR')
+      id:Date.now()+m.id,usuario_id:m.usuario_id,tipo:'demanda',
+      mensagem:`Nova solicitação de transporte — ${orig} → ${dest} (${codigo}) — Prioridade: ${dem.prioridade}`,
+      demanda_id:dem.id,lida:false,criado_em:new Date().toLocaleString('pt-BR'),
     });
   });
-  saveDB();
-  buildSidebar();
-  toast(`Demanda ${codigo} enviada! Motoristas notificados.`,'ok');
+  saveDB();buildSidebar();updateNotifDot();
+  toast(`Solicitação ${codigo} enviada! Motoristas notificados.`,'ok');
+  filterStatus='all';
   openPage('minhas-demandas');
 }
 
 // ═══════════════════════════════════════════
-//  PAINEL MOTORISTA
+//  PAINEL DO MOTORISTA
 // ═══════════════════════════════════════════
-function renderMotorista() {
-  const motorista = DB.motoristas.find(m=>m.usuario_id===currentUser.id);
-  // Corrida ativa
-  const ativa = DB.demandas.find(d=>d.status==='andamento'&&d.motorista_id===currentUser.id);
-  activeRide = ativa || null;
-  const rideWrap = document.getElementById('ride-active-wrap');
-  if(ativa){
-    rideWrap.style.display='block';
-    rideWrap.innerHTML = `
-      <div class="ride-active slide-up">
-        <div class="ride-header">
-          <div style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--green);">
-            <span class="ride-dot"></span> Corrida em andamento
+function renderMotorista(){
+  const mot=DB.motoristas.find(m=>m.usuario_id===currentUser.id);
+  const transp=DB.demandas.find(d=>d.status==='andamento'&&d.motorista_id===currentUser.id);
+  const wrap=document.getElementById('transp-ativo-wrap');
+  if(transp){
+    wrap.innerHTML=`
+      <div class="transp-ativo slide-up">
+        <div class="transp-header">
+          <div class="transp-titulo">
+            <span class="status-dot"></span> Transporte em andamento
           </div>${pillStatus('andamento')}
         </div>
-        <div class="ride-info-grid">
-          <div class="rib"><div class="rib-label">Código</div><div class="rib-val">${ativa.codigo}</div></div>
-          <div class="rib"><div class="rib-label">Origem</div><div class="rib-val">${ativa.origem}</div></div>
-          <div class="rib"><div class="rib-label">Destino</div><div class="rib-val">${ativa.destino}</div></div>
-          <div class="rib"><div class="rib-label">${ativa.tipo==='ambulancia'?'Paciente':'Categoria'}</div>
-            <div class="rib-val">${ativa.tipo==='ambulancia'?(ativa.paciente?.nome||'—'):(ativa.categoria||'—')}</div></div>
+        <div class="info-grid">
+          <div class="info-box"><div class="info-box-label">Código</div><div class="info-box-val">${transp.codigo}</div></div>
+          <div class="info-box"><div class="info-box-label">Origem</div><div class="info-box-val">${transp.origem}</div></div>
+          <div class="info-box"><div class="info-box-label">Destino</div><div class="info-box-val">${transp.destino}</div></div>
+          <div class="info-box"><div class="info-box-label">${transp.tipo==='ambulancia'?'Paciente':'Carga'}</div>
+            <div class="info-box-val">${transp.tipo==='ambulancia'?(transp.paciente?.nome||'—'):(transp.descricao||transp.categoria||'—')}</div></div>
         </div>
-        <div class="km-form">
-          <div class="km-form-title"><i class="ti ti-speedometer" style="color:var(--amber);font-size:16px;"></i> Registro do hodômetro</div>
+        <div class="hod-form">
+          <div class="hod-title"><i class="ti ti-speedometer" style="color:var(--amber);font-size:16px;"></i> Registro do hodômetro</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end;margin-bottom:12px;">
-            <div class="f-group"><label class="f-label">KM inicial (saída) *</label>
+            <div class="f-group"><label class="f-label">KM de saída *</label>
               <input class="f-input" type="number" id="km-inicio" placeholder="Ex: 85000" min="0" step="0.1" oninput="calcKm()"/></div>
-            <div class="f-group"><label class="f-label">KM final (chegada) *</label>
+            <div class="f-group"><label class="f-label">KM de chegada *</label>
               <input class="f-input" type="number" id="km-fim" placeholder="Ex: 85012" min="0" step="0.1" oninput="calcKm()"/></div>
-            <div class="f-group"><label class="f-label">KM rodados</label>
+            <div class="f-group"><label class="f-label">KM percorridos</label>
               <input class="f-input" id="km-total" readonly placeholder="—" style="background:var(--s4);color:var(--green);font-weight:700;"/></div>
           </div>
           <div style="display:flex;gap:10px;">
-            <button class="btn btn-red" onclick="cancelarCorrida(${ativa.id})"><i class="ti ti-x"></i> Cancelar corrida</button>
-            <button class="btn" onclick="concluirCorrida(${ativa.id})"><i class="ti ti-check"></i> Concluir e registrar</button>
+            <button class="btn btn-red" onclick="devolverFila(${transp.id})"><i class="ti ti-arrow-back-up"></i> Devolver à fila</button>
+            <button class="btn" onclick="registrarConclusao(${transp.id})"><i class="ti ti-check"></i> Registrar conclusão</button>
           </div>
         </div>
       </div>`;
   } else {
-    rideWrap.style.display='none';
+    wrap.innerHTML='';
   }
-  // Fila
-  const fila = DB.demandas.filter(d=>d.status==='aguardando')
-    .sort((a,b)=>{
-      const p={'emergencia':1,'urgente':2,'normal':3};
-      return (p[a.prioridade]||3)-(p[b.prioridade]||3);
-    });
-  const countEl = document.getElementById('fila-count');
-  countEl.textContent = fila.length + ' aguardando';
-  countEl.className = 'pill ' + (fila.length>0?'pill-amber':'pill-gray');
-  const filaEl = document.getElementById('fila-demandas');
-  if(!fila.length){
-    filaEl.innerHTML='<div class="empty-state"><i class="ti ti-clock"></i><p>Nenhuma solicitação na fila</p></div>';
-    return;
-  }
-  filaEl.innerHTML = fila.map(d=>`
-    <div class="demand-card ${d.prioridade==='emergencia'?'urgent':'normal-p'} slide-up">
+  // Fila ordenada por prioridade
+  const prioOrd={emergencia:1,urgente:2,normal:3};
+  const fila=DB.demandas.filter(d=>d.status==='aguardando').sort((a,b)=>(prioOrd[a.prioridade]||3)-(prioOrd[b.prioridade]||3));
+  const countEl=document.getElementById('fila-count');
+  countEl.textContent=fila.length+' aguardando';
+  countEl.className='pill '+(fila.length?'pill-amber':'pill-gray');
+  const filaEl=document.getElementById('fila-demandas');
+  if(!fila.length){filaEl.innerHTML='<div class="empty-state"><i class="ti ti-clock"></i><p>Nenhuma solicitação pendente</p></div>';return;}
+  filaEl.innerHTML=fila.map(d=>`
+    <div class="demand-card ${d.prioridade==='emergencia'?'urgente':'normal'} slide-up">
       <div class="dc-header">
         <div>
           <div style="font-size:14px;font-weight:700;">${d.codigo}</div>
@@ -991,8 +928,8 @@ function renderMotorista() {
       </div>
       ${d.observacoes?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;"><i class="ti ti-note"></i> ${d.observacoes}</div>`:''}
       <div class="dc-actions">
-        <button class="btn-outline btn-sm" onclick="openDemandaModal(${d.id})"><i class="ti ti-eye"></i> Ver detalhes</button>
-        ${!ativa?`<button class="btn btn-sm" onclick="aceitarCorrida(${d.id})"><i class="ti ti-check"></i> Aceitar corrida</button>`:''}
+        <button class="btn-outline btn-sm" onclick="openDetalhe(${d.id})"><i class="ti ti-eye"></i> Ver detalhes</button>
+        ${!transp?`<button class="btn btn-sm" onclick="assumirTransporte(${d.id})"><i class="ti ti-check"></i> Assumir transporte</button>`:''}
       </div>
     </div>`).join('');
 }
@@ -1002,92 +939,71 @@ function calcKm(){
   const fim=parseFloat(document.getElementById('km-fim').value)||0;
   const tot=document.getElementById('km-total');
   if(fim>ini){tot.value=(fim-ini).toFixed(1)+' km';tot.style.color='var(--green)';}
-  else if(fim&&ini&&fim<=ini){tot.value='⚠️ KM fim < início';tot.style.color='var(--red)';}
-  else{tot.value='—';}
+  else if(fim&&ini&&fim<=ini){tot.value='⚠ KM chegada < saída';tot.style.color='var(--red)';}
+  else tot.value='—';
 }
-
-function aceitarCorrida(id){
-  if(activeRide){ toast('Você já tem uma corrida ativa.','err'); return; }
-  const d = DB.demandas.find(x=>x.id===id);
-  if(!d) return;
-  const mot = DB.motoristas.find(m=>m.usuario_id===currentUser.id);
-  const vei = DB.veiculos.find(v=>v.id===mot?.veiculo_id);
-  d.status = 'andamento';
-  d.motorista_id = currentUser.id;
-  d.motorista_nome = currentUser.nome;
-  d.veiculo_nome = vei?.nome || '—';
-  d.aceito_em = new Date().toLocaleString('pt-BR');
-  if(vei) vei.status='em_corrida';
-  if(mot) mot.status='em_corrida';
-  // Notifica solicitante
-  DB.notificacoes.push({id:Date.now(),usuario_id:d.solicitante_id,tipo:'andamento',mensagem:`Sua demanda ${d.codigo} foi aceita por ${currentUser.nome}`,demanda_id:id,lida:false,criado_em:new Date().toLocaleString('pt-BR')});
-  saveDB();
-  toast('Corrida aceita! Preencha o hodômetro ao concluir.','ok');
+function assumirTransporte(id){
+  if(DB.demandas.find(d=>d.status==='andamento'&&d.motorista_id===currentUser.id)){toast('Você já possui um transporte ativo.','err');return;}
+  const d=DB.demandas.find(x=>x.id===id);if(!d)return;
+  const mot=DB.motoristas.find(m=>m.usuario_id===currentUser.id);
+  const vei=DB.veiculos.find(v=>v.id===mot?.veiculo_id);
+  d.status='andamento';d.motorista_id=currentUser.id;d.motorista_nome=currentUser.nome;d.veiculo_nome=vei?.nome||'—';
+  if(vei)vei.status='em_transporte';if(mot)mot.status='em_transporte';
+  DB.notificacoes.push({id:Date.now(),usuario_id:d.solicitante_id,tipo:'andamento',
+    mensagem:`Sua solicitação ${d.codigo} foi assumida por ${currentUser.nome} (${vei?.nome||'—'})`,
+    demanda_id:id,lida:false,criado_em:new Date().toLocaleString('pt-BR')});
+  saveDB();buildSidebar();updateNotifDot();
+  toast('Transporte assumido! Preencha o hodômetro ao concluir.','ok');
   renderMotorista();
-  buildSidebar();
-  updateNotifBadge();
 }
-
-function concluirCorrida(id){
+function registrarConclusao(id){
   const ini=parseFloat(document.getElementById('km-inicio').value);
   const fim=parseFloat(document.getElementById('km-fim').value);
-  if(!ini){ toast('Informe o KM inicial.','err'); return; }
-  if(!fim){ toast('Informe o KM final.','err');   return; }
-  if(fim<=ini){ toast('KM final deve ser maior que KM inicial.','err'); return; }
-  const d = DB.demandas.find(x=>x.id===id);
-  if(!d) return;
-  d.status='concluida'; d.km_inicio=ini; d.km_fim=fim;
-  d.concluido_em=new Date().toLocaleString('pt-BR');
-  // Atualiza hodômetro
+  if(!ini){toast('Informe o KM de saída.','err');return;}
+  if(!fim){toast('Informe o KM de chegada.','err');return;}
+  if(fim<=ini){toast('KM de chegada deve ser maior que o de saída.','err');return;}
+  const d=DB.demandas.find(x=>x.id===id);if(!d)return;
+  d.status='concluida';d.km_inicio=ini;d.km_fim=fim;d.concluido_em=new Date().toLocaleString('pt-BR');
   const mot=DB.motoristas.find(m=>m.usuario_id===currentUser.id);
   const vei=DB.veiculos.find(v=>v.id===mot?.veiculo_id);
-  if(vei){ vei.hodometro=fim; vei.status='disponivel'; }
-  if(mot) mot.status='disponivel';
-  // Notifica solicitante
-  DB.notificacoes.push({id:Date.now(),usuario_id:d.solicitante_id,tipo:'concluida',mensagem:`Demanda ${d.codigo} concluída! ${(fim-ini).toFixed(1)} km rodados`,demanda_id:id,lida:false,criado_em:new Date().toLocaleString('pt-BR')});
-  activeRide=null; saveDB(); buildSidebar(); updateNotifBadge();
-  toast(`Corrida ${d.codigo} concluída! ${(fim-ini).toFixed(1)} km registrados.`,'ok');
+  if(vei){vei.hodometro=fim;vei.status='disponivel';}if(mot)mot.status='disponivel';
+  DB.notificacoes.push({id:Date.now(),usuario_id:d.solicitante_id,tipo:'concluida',
+    mensagem:`Transporte ${d.codigo} concluído — ${(fim-ini).toFixed(1)} km percorridos`,
+    demanda_id:id,lida:false,criado_em:new Date().toLocaleString('pt-BR')});
+  saveDB();buildSidebar();updateNotifDot();
+  toast(`Transporte ${d.codigo} concluído — ${(fim-ini).toFixed(1)} km registrados.`,'ok');
   renderMotorista();
 }
-
-function cancelarCorrida(id){
-  if(!confirm('Cancelar a corrida? Ela voltará para a fila.')) return;
-  const d=DB.demandas.find(x=>x.id===id);
-  if(!d) return;
-  d.status='aguardando'; d.motorista_id=null; d.motorista_nome=null;
+function devolverFila(id){
+  if(!confirm('Devolver esta solicitação para a fila de espera?'))return;
+  const d=DB.demandas.find(x=>x.id===id);if(!d)return;
+  d.status='aguardando';d.motorista_id=null;d.motorista_nome=null;d.veiculo_nome=null;
   const mot=DB.motoristas.find(m=>m.usuario_id===currentUser.id);
   const vei=DB.veiculos.find(v=>v.id===mot?.veiculo_id);
-  if(vei) vei.status='disponivel';
-  if(mot) mot.status='disponivel';
-  activeRide=null; saveDB(); renderMotorista(); buildSidebar();
-  toast('Corrida cancelada. Voltou para a fila.','err');
+  if(vei)vei.status='disponivel';if(mot)mot.status='disponivel';
+  saveDB();renderMotorista();buildSidebar();
+  toast('Solicitação devolvida para a fila.','err');
 }
 
 // ═══════════════════════════════════════════
-//  MINHAS DEMANDAS
+//  MINHAS SOLICITAÇÕES
 // ═══════════════════════════════════════════
-function renderMinhasDemandas(filter='all'){
-  filterStatus=filter;
+function renderMinhasDemandas(filter){
+  filterStatus=filter||'all';
   const isGestor=currentUser.perfil==='gestor';
   let list=isGestor?[...DB.demandas]:DB.demandas.filter(d=>d.solicitante_id===currentUser.id);
-  if(filter!=='all') list=list.filter(d=>d.status===filter);
+  if(filterStatus!=='all')list=list.filter(d=>d.status===filterStatus);
   list=[...list].reverse();
-  const filtros=[
-    {v:'all',l:'Todas'},{v:'aguardando',l:'Aguardando'},
-    {v:'andamento',l:'Em andamento'},{v:'concluida',l:'Concluídas'},{v:'cancelada',l:'Canceladas'}
-  ];
+  const filtros=[{v:'all',l:'Todas'},{v:'aguardando',l:'Aguardando'},{v:'andamento',l:'Em transporte'},{v:'concluida',l:'Concluídas'},{v:'cancelada',l:'Canceladas'}];
   document.getElementById('filtros-btn').innerHTML=filtros.map(f=>
-    `<button class="${filter===f.v?'btn btn-sm':'btn-outline btn-sm'}" onclick="renderMinhasDemandas('${f.v}')">${f.l}</button>`
-  ).join('');
+    `<button class="${filterStatus===f.v?'btn btn-sm':'btn-outline btn-sm'}" onclick="renderMinhasDemandas('${f.v}')">${f.l}</button>`).join('');
   const el=document.getElementById('minhas-demandas-lista');
-  if(!list.length){ el.innerHTML='<div class="empty-state"><i class="ti ti-file-off"></i><p>Nenhuma demanda encontrada</p></div>'; return; }
+  if(!list.length){el.innerHTML='<div class="empty-state"><i class="ti ti-file-off"></i><p>Nenhuma solicitação encontrada</p></div>';return;}
   el.innerHTML=list.map(d=>`
-    <div class="demand-card ${d.prioridade==='emergencia'?'urgent':'normal-p'}">
+    <div class="demand-card ${d.prioridade==='emergencia'?'urgente':'normal'}">
       <div class="dc-header">
-        <div>
-          <div style="font-size:14px;font-weight:700;">${d.codigo}</div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${d.criado_em}</div>
-        </div>
+        <div><div style="font-size:14px;font-weight:700;">${d.codigo}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${d.criado_em}</div></div>
         <div style="display:flex;gap:6px;">${pillStatus(d.status)}${pillPrioridade(d.prioridade)}</div>
       </div>
       <div class="dc-body">
@@ -1095,20 +1011,18 @@ function renderMinhasDemandas(filter='all'){
         <div class="dc-field"><div class="dc-field-label">Origem</div><div class="dc-field-val">${d.origem}</div></div>
         <div class="dc-field"><div class="dc-field-label">Destino</div><div class="dc-field-val">${d.destino}</div></div>
       </div>
-      ${d.motorista_nome?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;"><i class="ti ti-steering-wheel"></i> ${d.motorista_nome}</div>`:''}
-      ${d.km_inicio&&d.km_fim?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;"><i class="ti ti-speedometer"></i> KM: ${d.km_inicio} → ${d.km_fim} (${(d.km_fim-d.km_inicio).toFixed(1)} km)</div>`:''}
-      <div class="dc-actions" style="margin-top:8px;">
-        <button class="btn-outline btn-sm" onclick="openDemandaModal(${d.id})"><i class="ti ti-eye"></i> Ver detalhes</button>
-      </div>
+      ${d.motorista_nome?`<div style="font-size:12px;color:var(--text2);margin-bottom:8px;"><i class="ti ti-steering-wheel"></i> Motorista: ${d.motorista_nome}</div>`:''}
+      ${d.km_inicio!=null&&d.km_fim!=null?`<div style="font-size:12px;color:var(--green);margin-bottom:8px;font-weight:600;"><i class="ti ti-speedometer"></i> ${d.km_inicio.toFixed(1)} km → ${d.km_fim.toFixed(1)} km (${(d.km_fim-d.km_inicio).toFixed(1)} km percorridos)</div>`:''}
+      <div class="dc-actions"><button class="btn-outline btn-sm" onclick="openDetalhe(${d.id})"><i class="ti ti-eye"></i> Ver detalhes</button></div>
     </div>`).join('');
 }
 
 // ═══════════════════════════════════════════
 //  MODAL DETALHES
 // ═══════════════════════════════════════════
-function openDemandaModal(id){
-  const d=DB.demandas.find(x=>x.id===id);
-  if(!d) return;
+function openDetalhe(id){
+  const d=DB.demandas.find(x=>x.id===id);if(!d)return;
+  document.getElementById('modal-detalhe-titulo').textContent='Solicitação '+d.codigo;
   let extra='';
   if(d.tipo==='ambulancia'&&d.paciente){
     const p=d.paciente;
@@ -1122,7 +1036,7 @@ function openDemandaModal(id){
         <div><div class="f-label">Suporte</div><div style="font-weight:600;margin-top:3px;">${p.suporte||'—'}</div></div>
         <div><div class="f-label">Acompanhante</div><div style="font-weight:600;margin-top:3px;">${p.acompanhante||'—'}</div></div>
         <div><div class="f-label">Médico</div><div style="font-weight:600;margin-top:3px;">${p.medico||'—'}</div></div>
-        <div class="full"><div class="f-label">CID / Diagnóstico</div><div style="font-weight:600;margin-top:3px;">${p.cid||'—'}</div></div>
+        <div class="full"><div class="f-label">Diagnóstico / CID</div><div style="font-weight:600;margin-top:3px;">${p.cid||'—'}</div></div>
       </div>`;
   } else if(d.tipo==='apoio'){
     extra=`<div class="section-div" style="margin-top:14px;">Dados do transporte</div>
@@ -1130,27 +1044,33 @@ function openDemandaModal(id){
         <div><div class="f-label">Categoria</div><div style="font-weight:600;margin-top:3px;">${d.categoria||'—'}</div></div>
         <div><div class="f-label">Descrição</div><div style="font-weight:600;margin-top:3px;">${d.descricao||'—'}</div></div>
       </div>
-      ${d.itens&&d.itens.length?`<div style="margin-top:10px;"><div class="f-label" style="margin-bottom:6px;">Itens</div>
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
-          <thead><tr style="background:var(--s3);"><th style="padding:8px;text-align:left;font-size:11px;color:var(--text2);text-transform:uppercase;">Item</th><th style="padding:8px;text-align:left;font-size:11px;color:var(--text2);text-transform:uppercase;">Qtde</th><th style="padding:8px;text-align:left;font-size:11px;color:var(--text2);text-transform:uppercase;">Setor</th></tr></thead>
-          <tbody>${d.itens.map(it=>`<tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:8px;">${it.nome||'—'}</td><td style="padding:8px;">${it.qtde||'—'}</td><td style="padding:8px;">${it.setor||'—'}</td>
+      ${d.itens?.length?`<div style="margin-top:10px;"><div class="f-label" style="margin-bottom:6px;">Itens</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;background:var(--s2);border-radius:8px;overflow:hidden;">
+          <thead><tr style="background:var(--s3);">
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;">Item</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;">Qtde</th>
+            <th style="padding:8px 10px;text-align:left;font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;">Setor</th>
+          </tr></thead>
+          <tbody>${d.itens.map(it=>`<tr style="border-top:1px solid var(--border);">
+            <td style="padding:8px 10px;">${it.nome||'—'}</td>
+            <td style="padding:8px 10px;">${it.qtde||'—'}</td>
+            <td style="padding:8px 10px;">${it.setor||'—'}</td>
           </tr>`).join('')}</tbody>
         </table></div>`:''}`;
   }
-  const km=d.km_inicio&&d.km_fim?`
-    <div class="section-div" style="margin-top:14px;">Hodômetro</div>
+  const km=d.km_inicio!=null&&d.km_fim!=null?`
+    <div class="section-div" style="margin-top:14px;">Hodômetro registrado</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-      <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--text2);">KM Inicial</div><div style="font-size:20px;font-weight:800;margin-top:4px;">${d.km_inicio.toFixed(1)}</div></div>
-      <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--text2);">KM Final</div><div style="font-size:20px;font-weight:800;margin-top:4px;">${d.km_fim.toFixed(1)}</div></div>
-      <div style="background:rgba(6,193,103,.1);border:1px solid rgba(6,193,103,.3);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--green);">KM Rodados</div><div style="font-size:20px;font-weight:800;color:var(--green);margin-top:4px;">${(d.km_fim-d.km_inicio).toFixed(1)}</div></div>
+      <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--text2);">KM de saída</div><div style="font-size:20px;font-weight:800;margin-top:4px;">${d.km_inicio.toFixed(1)}</div></div>
+      <div style="background:var(--s2);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--text2);">KM de chegada</div><div style="font-size:20px;font-weight:800;margin-top:4px;">${d.km_fim.toFixed(1)}</div></div>
+      <div style="background:rgba(6,193,103,.1);border:1px solid rgba(6,193,103,.3);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:11px;color:var(--green);">KM percorridos</div><div style="font-size:20px;font-weight:800;color:var(--green);margin-top:4px;">${(d.km_fim-d.km_inicio).toFixed(1)}</div></div>
     </div>`:'';
-  document.getElementById('modal-demanda-body').innerHTML=`
-    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">${pillStatus(d.status)}${pillPrioridade(d.prioridade)}<span class="pill pill-gray">${d.tipo==='ambulancia'?'🚑 Ambulância':'🚗 Carro de apoio'}</span></div>
+  document.getElementById('modal-detalhe-body').innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">${pillStatus(d.status)}${pillPrioridade(d.prioridade)}<span class="pill pill-gray">${d.tipo==='ambulancia'?'🚑 Ambulância':'🚗 Apoio'}</span></div>
     <div class="section-div">Informações gerais</div>
     <div class="form-grid">
       <div><div class="f-label">Código</div><div style="font-weight:600;margin-top:3px;">${d.codigo}</div></div>
-      <div><div class="f-label">Solicitante</div><div style="font-weight:600;margin-top:3px;">${d.solicitante_nome}</div></div>
+      <div><div class="f-label">Responsável</div><div style="font-weight:600;margin-top:3px;">${d.solicitante_nome}</div></div>
       <div><div class="f-label">Origem</div><div style="font-weight:600;margin-top:3px;">${d.origem}</div></div>
       <div><div class="f-label">Destino</div><div style="font-weight:600;margin-top:3px;">${d.destino}</div></div>
       <div><div class="f-label">Data / Hora</div><div style="font-weight:600;margin-top:3px;">${d.criado_em}</div></div>
@@ -1158,7 +1078,7 @@ function openDemandaModal(id){
     </div>
     ${d.observacoes?`<div style="margin-top:8px;"><div class="f-label">Observações</div><div style="font-size:13px;margin-top:3px;">${d.observacoes}</div></div>`:''}
     ${extra}${km}`;
-  openModal('modal-demanda');
+  openModal('modal-detalhe');
 }
 
 // ═══════════════════════════════════════════
@@ -1167,9 +1087,9 @@ function openDemandaModal(id){
 function renderHistorico(){
   const list=[...DB.demandas].filter(d=>d.status==='concluida'||d.status==='cancelada').reverse();
   const tbody=document.getElementById('historico-body');
-  if(!list.length){ tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px;">Nenhum registro</td></tr>'; return; }
+  if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:24px;">Nenhum registro</td></tr>';return;}
   tbody.innerHTML=list.map(d=>`<tr>
-    <td><b>${d.codigo}</b></td>
+    <td><b style="cursor:pointer;color:var(--green);" onclick="openDetalhe(${d.id})">${d.codigo}</b></td>
     <td style="font-size:12px;color:var(--text2);">${d.criado_em}</td>
     <td><span class="pill ${d.tipo==='ambulancia'?'pill-red':'pill-blue'}">${d.tipo==='ambulancia'?'Amb.':'Apoio'}</span></td>
     <td>${d.origem}</td><td>${d.destino}</td>
@@ -1185,103 +1105,96 @@ function renderHistorico(){
 //  RELATÓRIO
 // ═══════════════════════════════════════════
 function renderRelatorio(){
-  const conc=DB.demandas.filter(d=>d.status==='concluida'&&d.km_inicio!=null);
+  const conc=DB.demandas.filter(d=>d.status==='concluida'&&d.km_fim!=null);
   const totalKm=conc.reduce((a,d)=>a+(d.km_fim-d.km_inicio),0);
   document.getElementById('rel-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-val">${conc.length}</div><div class="stat-label">Corridas concluídas</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--green);">${totalKm.toFixed(1)}</div><div class="stat-label">Km totais rodados</div></div>
+    <div class="stat-card"><div class="stat-val">${conc.length}</div><div class="stat-label">Transportes concluídos</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);">${totalKm.toFixed(1)}</div><div class="stat-label">Km percorridos total</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--amber);">R$ ${(totalKm*0.8).toFixed(2)}</div><div class="stat-label">Custo estimado</div></div>
-    <div class="stat-card"><div class="stat-val">${conc.length?( totalKm/conc.length).toFixed(1):'0'}</div><div class="stat-label">Km médios/corrida</div></div>`;
-  const porVei={};
-  conc.forEach(d=>{
-    const v=d.veiculo_nome||'Desconhecido';
-    if(!porVei[v]){porVei[v]={corridas:0,km:0};}
-    porVei[v].corridas++;porVei[v].km+=(d.km_fim-d.km_inicio);
-  });
-  const vei=DB.veiculos;
-  document.getElementById('rel-body').innerHTML=Object.entries(porVei).map(([n,r])=>{
-    const v=vei.find(x=>x.nome===n);
-    return`<tr><td><b>${n}</b></td><td>${v?.placa||'—'}</td><td>${r.corridas}</td>
+    <div class="stat-card"><div class="stat-val">${conc.length?(totalKm/conc.length).toFixed(1):'0'}</div><div class="stat-label">Km médios por transporte</div></div>`;
+  const pv={};
+  conc.forEach(d=>{const v=d.veiculo_nome||'—';if(!pv[v]){pv[v]={n:0,km:0};}pv[v].n++;pv[v].km+=(d.km_fim-d.km_inicio);});
+  document.getElementById('rel-body').innerHTML=Object.entries(pv).map(([nome,r])=>{
+    const v=DB.veiculos.find(x=>x.nome===nome);
+    return`<tr><td><b>${nome}</b></td><td>${v?.placa||'—'}</td><td>${r.n}</td>
       <td style="color:var(--green);font-weight:700;">${r.km.toFixed(1)} km</td>
       <td style="color:var(--amber);font-weight:700;">R$ ${(r.km*0.8).toFixed(2)}</td></tr>`;
-  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Nenhum dado disponível</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;">Sem dados disponíveis</td></tr>';
 }
 
 // ═══════════════════════════════════════════
 //  CADASTROS
 // ═══════════════════════════════════════════
 function renderCadastros(){
-  // Setores
   document.getElementById('setores-lista').innerHTML=DB.setores.map((s,i)=>`
-    <div id="setor-${s.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 13px;${i<DB.setores.length-1?'border-bottom:1px solid var(--border);':''}font-size:13px;">
+    <div id="st${s.id}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 13px;${i<DB.setores.length-1?'border-bottom:1px solid var(--border);':''}font-size:13px;">
       <div><div style="font-weight:600;">${s.nome}</div><div style="font-size:11px;color:var(--text2);">${s.tipo}${s.info?' · '+s.info:''}</div></div>
       <button class="btn btn-red btn-sm" onclick="delSetor(${s.id})"><i class="ti ti-trash"></i></button>
     </div>`).join('');
-  // Motoristas
   document.getElementById('motoristas-lista').innerHTML=DB.motoristas.map((m,i)=>{
-    const u=DB.usuarios.find(x=>x.id===m.usuario_id);
-    const v=DB.veiculos.find(x=>x.id===m.veiculo_id);
+    const u=DB.usuarios.find(x=>x.id===m.usuario_id),v=DB.veiculos.find(x=>x.id===m.veiculo_id);
     return`<div style="display:flex;align-items:center;gap:12px;padding:12px;${i<DB.motoristas.length-1?'border-bottom:1px solid var(--border);':''}">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0;">${(u?.nome||'?').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--s4);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;">${(u?.nome||'?').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
       <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${u?.nome||'—'}</div><div style="font-size:11px;color:var(--text2);">CNH-${m.cnh} · ${v?.nome||'—'}</div></div>
       <span class="pill ${m.status==='disponivel'?'pill-green':'pill-amber'}">${m.status}</span>
     </div>`;
   }).join('');
-  // Veículos
   document.getElementById('veiculos-lista').innerHTML=DB.veiculos.map((v,i)=>`
     <div style="padding:12px;${i<DB.veiculos.length-1?'border-bottom:1px solid var(--border);':''}display:flex;align-items:center;gap:12px;">
       <span style="font-size:22px;">${v.tipo==='ambulancia'?'🚑':'🚗'}</span>
       <div style="flex:1;"><div style="font-size:13px;font-weight:600;">${v.nome} — ${v.placa}</div><div style="font-size:11px;color:var(--text2);">${v.modelo} · ${v.hodometro.toLocaleString('pt-BR')} km</div></div>
-      <span class="pill ${v.status==='disponivel'?'pill-green':v.status==='em_corrida'?'pill-amber':'pill-gray'}">${v.status.replace('_',' ')}</span>
+      <span class="pill ${v.status==='disponivel'?'pill-green':'pill-amber'}">${v.status.replace('_',' ')}</span>
     </div>`).join('');
 }
-
 function addSetor(){
   const nome=document.getElementById('ns-nome').value.trim();
   if(!nome){toast('Informe o nome do setor.','err');return;}
-  const novo={id:Date.now(),nome,tipo:document.getElementById('ns-tipo').value,info:document.getElementById('ns-info').value.trim()};
-  DB.setores.push(novo);
+  DB.setores.push({id:Date.now(),nome,tipo:document.getElementById('ns-tipo').value,info:document.getElementById('ns-info').value.trim()});
   document.getElementById('ns-nome').value='';document.getElementById('ns-info').value='';
-  saveDB();renderCadastros();toast('Setor "'+nome+'" cadastrado!','ok');
+  saveDB();renderCadastros();toast('"'+nome+'" cadastrado!','ok');
 }
-
 function delSetor(id){
-  if(!confirm('Remover este setor?')) return;
+  if(!confirm('Remover este setor?'))return;
   DB.setores=DB.setores.filter(s=>s.id!==id);
   saveDB();renderCadastros();toast('Setor removido.');
 }
 
 // ═══════════════════════════════════════════
-//  NOTIFICAÇÕES
+//  NOTIFICAÇÕES — clique abre detalhes
 // ═══════════════════════════════════════════
 function renderNotificacoes(){
   const notifs=DB.notificacoes.filter(n=>n.usuario_id===currentUser.id).reverse();
   const el=document.getElementById('notif-lista');
   if(!notifs.length){el.innerHTML='<div class="empty-state"><i class="ti ti-bell-off"></i><p>Nenhuma notificação</p></div>';return;}
-  el.innerHTML=`<div style="background:var(--s2);border-radius:var(--r);overflow:hidden;">`+
-    notifs.map((n,i)=>`
-      <div style="padding:13px;${i<notifs.length-1?'border-bottom:1px solid var(--border);':''}display:flex;gap:12px;align-items:flex-start;cursor:pointer;opacity:${n.lida?'.5':'1'}" onclick="marcarLida(${n.id})">
-        <div style="width:36px;height:36px;border-radius:50%;background:${n.tipo==='demanda'?'rgba(245,166,35,.15)':n.tipo==='concluida'?'rgba(6,193,103,.15)':'rgba(39,110,241,.15)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="ti ${n.tipo==='demanda'?'ti-alert-triangle':n.tipo==='concluida'?'ti-check':'ti-info-circle'}" style="font-size:17px;color:${n.tipo==='demanda'?'var(--amber)':n.tipo==='concluida'?'var(--green)':'var(--blue)'}"></i>
-        </div>
-        <div style="flex:1;"><div style="font-size:13px;font-weight:${n.lida?'500':'700'};">${n.mensagem}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${n.criado_em}</div></div>
-        ${!n.lida?'<div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>':''}
-      </div>`).join('')+`</div>`;
-  // Marca todas como lidas ao abrir
-  DB.notificacoes.filter(n=>n.usuario_id===currentUser.id).forEach(n=>n.lida=true);
-  saveDB();updateNotifBadge();buildSidebar();
+  const cores={demanda:'rgba(245,166,35,.15)',andamento:'rgba(39,110,241,.15)',concluida:'rgba(6,193,103,.15)'};
+  const icons={demanda:'ti-ambulance',andamento:'ti-steering-wheel',concluida:'ti-check'};
+  const iconcores={demanda:'var(--amber)',andamento:'var(--blue)',concluida:'var(--green)'};
+  el.innerHTML=notifs.map(n=>`
+    <div class="notif-card" onclick="abrirNotificacao(${n.id})" style="opacity:${n.lida?.6:1};">
+      <div class="notif-icon" style="background:${cores[n.tipo]||'var(--s3)'};">
+        <i class="ti ${icons[n.tipo]||'ti-bell'}" style="color:${iconcores[n.tipo]||'var(--text2)'}"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:${n.lida?500:700};">${n.mensagem}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">${n.criado_em}</div>
+        ${n.demanda_id?`<div style="font-size:11px;color:var(--green);margin-top:3px;font-weight:600;">Toque para abrir os detalhes →</div>`:''}
+      </div>
+      ${!n.lida?'<div class="notif-unreadsign"></div>':''}
+    </div>`).join('');
 }
-
-function marcarLida(id){
-  const n=DB.notificacoes.find(x=>x.id===id);
-  if(n) n.lida=true;
-  saveDB();updateNotifBadge();buildSidebar();renderNotificacoes();
+function abrirNotificacao(id){
+  const n=DB.notificacoes.find(x=>x.id===id);if(!n)return;
+  n.lida=true;saveDB();updateNotifDot();buildSidebar();
+  if(n.demanda_id){
+    openDetalhe(n.demanda_id);
+  } else {
+    renderNotificacoes();
+    toast(n.mensagem,'ok');
+  }
 }
-
 function marcarTodasLidas(){
   DB.notificacoes.filter(n=>n.usuario_id===currentUser.id).forEach(n=>n.lida=true);
-  saveDB();updateNotifBadge();buildSidebar();renderNotificacoes();
+  saveDB();updateNotifDot();buildSidebar();renderNotificacoes();
   toast('Todas as notificações foram marcadas como lidas.','ok');
 }
 
@@ -1289,36 +1202,71 @@ function marcarTodasLidas(){
 //  HELPERS
 // ═══════════════════════════════════════════
 function pillStatus(s){
-  const m={aguardando:['pill-amber','Aguardando'],andamento:['pill-blue','Em andamento'],concluida:['pill-green','Concluída'],cancelada:['pill-red','Cancelada']};
-  const [c,l]=m[s]||['pill-gray',s];
-  return `<span class="pill ${c}">${l}</span>`;
+  const m={aguardando:['pill-amber','Aguardando'],andamento:['pill-blue','Em transporte'],concluida:['pill-green','Concluído'],cancelada:['pill-red','Cancelado']};
+  const[c,l]=m[s]||['pill-gray',s];return`<span class="pill ${c}">${l}</span>`;
 }
 function pillPrioridade(p){
   const m={normal:['pill-blue','Normal'],urgente:['pill-amber','Urgente'],emergencia:['pill-red','EMERGÊNCIA']};
-  const [c,l]=m[p]||['pill-gray',p];
-  return `<span class="pill ${c}">${l}</span>`;
+  const[c,l]=m[p]||['pill-gray',p];return`<span class="pill ${c}">${l}</span>`;
 }
-function ucfirst(s){ return s?s.charAt(0).toUpperCase()+s.slice(1):''; }
-
-function openModal(id){ document.getElementById(id).classList.add('open'); }
-function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-function closeModalBg(e,id){ if(e.target===e.currentTarget) closeModal(id); }
-
+function ucfirst(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
 function toast(msg,type=''){
   const t=document.getElementById('toast-el');
-  const icons={ok:'<i class="ti ti-check" style="color:var(--green);font-size:16px;"></i>',err:'<i class="ti ti-alert-circle" style="color:var(--red);font-size:16px;"></i>'};
-  t.innerHTML=(icons[type]||'')+`<span>${msg}</span>`;
+  const ic={ok:'<i class="ti ti-check" style="color:var(--green);font-size:15px;"></i>',err:'<i class="ti ti-alert-circle" style="color:var(--red);font-size:15px;"></i>'};
+  t.innerHTML=(ic[type]||'')+`<span>${msg}</span>`;
   t.className='toast show'+(type?' '+type:'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
 }
-
-// Keyboard shortcut
-document.addEventListener('keydown', e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==='k'&&currentUser){
-    e.preventDefault();openPage('nova-demanda');
-  }
-});
 </script>
 </body>
-</html>
+</html>"""
+
+with open('/mnt/user-data/outputs/index.html', 'w') as f:
+    f.write(html)
+
+print(f"OK — {len(html)} bytes / {html.count(chr(10))} linhas")
+
+# Verificações
+checks = {
+  'Mapa Leaflet':       'leaflet' in html,
+  'Coordenadas HMPá':   '-1.454589' in html,
+  'map-bg':             'id="map-bg"' in html,
+  'Mapa overlay':       'id="map-overlay"' in html,
+  'abrirNotificacao':   'abrirNotificacao' in html,
+  'Abre detalhes':      'openDetalhe' in html and 'abrirNotificacao' in html,
+  'Toque para abrir':   'Toque para abrir' in html,
+  'Transporte ativo':   'Transporte em andamento' in html,
+  'Assumir transporte': 'Assumir transporte' in html,
+  'Devolver à fila':    'Devolver à fila' in html,
+  'Registrar conclusão':'Registrar conclusão' in html,
+  'Sem corrida':        'corrida' not in html.lower() or html.lower().count('corrida') == 0,
+  'Sem uber':           'uber' not in html.lower(),
+  'KM de saída':        'KM de saída' in html,
+  'KM percorridos':     'KM percorridos' in html,
+}
+print()
+for k,v in checks.items():
+    print(f"  {'✓' if v else '✗'} {k}")
+PYEOF
+python3 /tmp/build_hmpa.py
+Saída
+
+OK — 77612 bytes / 1223 linhas
+
+  ✓ Mapa Leaflet
+  ✓ Coordenadas HMPá
+  ✓ map-bg
+  ✓ Mapa overlay
+  ✓ abrirNotificacao
+  ✓ Abre detalhes
+  ✓ Toque para abrir
+  ✓ Transporte ativo
+  ✓ Assumir transporte
+  ✓ Devolver à fila
+  ✓ Registrar conclusão
+  ✓ Sem corrida
+  ✓ Sem uber
+  ✓ KM de saída
+  ✓ KM percorridos
